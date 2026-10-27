@@ -1,5 +1,13 @@
 # EventCraft AI 🎪✨
 
+[![CI](https://github.com/Dhinakarg/EventCraft/actions/workflows/ci.yml/badge.svg)](https://github.com/Dhinakarg/EventCraft/actions/workflows/ci.yml)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![Type Check: Mypy Strict](https://img.shields.io/badge/mypy-strict-blue.svg)](https://mypy-lang.org/)
+[![Pylint: 10/10](https://img.shields.io/badge/pylint-10.00%2F10-brightgreen.svg)](https://pylint.pycqa.org/)
+[![WCAG 2.1 AA](https://img.shields.io/badge/accessibility-WCAG%202.1%20AA-success.svg)](docs/ACCESSIBILITY.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 **EventCraft AI** is an accessible, high-performance event planning platform for **weddings**, **birthdays**, and **community festivals**.
 
 It pairs a **pure deterministic mathematical engine** (budget allocation, priority weighting, backward timeline scheduling, vendor checklists, and feasibility checks) with the **Google Gemini SDK** (structured creative theme generation and conversational refinement), protected by offline fallback templates, prompt injection defenses, and strict **WCAG 2.1 AA** accessibility.
@@ -63,6 +71,16 @@ graph TD
         RateLimiter["Per-IP Sliding Window Rate Limiter\n(60s Window, In-Memory)"]
         Sanitizer["Input Sanitizer & Validator\n(Pydantic v2 + HTML/Control Strip)"]
     end
+
+    subgraph APILayer["API Routers (app/api/)"]
+        RoutePlan["routes_plan.py (/api/plan)"]
+        RouteChat["routes_chat.py (/api/chat)"]
+        RouteExport["routes_export.py (/api/export/ics)"]
+    end
+
+    subgraph ServiceLayer["Service Orchestration (app/services/)"]
+        PlanService["plan_service.py\ncreate_event_plan & _build_warnings"]
+    end
     
     subgraph DeterministicEngine["Deterministic Rules Engine (app/engine/ - Pure Math, Zero Network)"]
         Profiles["profiles.py\nUniversal Constants & Profiles"]
@@ -70,13 +88,14 @@ graph TD
         TimelineEngine["timeline.py\nBackward Scheduler & Rush Detector"]
         VendorEngine["vendors.py\nBooking Deadlines & Questions"]
         ICSEngine["ics.py\nRFC 5545 Calendar Generator"]
+        DataTemplates["data/task_templates.py & vendor_specs.py"]
     end
 
     subgraph AIEngine["Creative GenAI Engine (app/ai/)"]
         PromptGuard["prompts.py\nDelimited Blocks & Injection Defense"]
         LRUCache["In-Memory LRU Cache\n(Keyed by Request Hash)"]
         GeminiClient["gemini_client.py\ngoogle-genai SDK (10s timeout, 1 retry)"]
-        Fallback["fallback.py\nCurated Context-Aware Offline Templates"]
+        Fallback["fallback.py & data/fallback_content.py\nCurated Context-Aware Offline Templates"]
     end
 
     ExternalAPI["☁️ Google Gemini 2.5 Flash API"]
@@ -84,16 +103,22 @@ graph TD
     User <--> UI
     UI <--> Gateway
     Gateway --> Security --> RateLimiter --> Sanitizer
-    Sanitizer --> DeterministicEngine
-    Sanitizer --> AIEngine
+    Sanitizer --> APILayer
+    RoutePlan --> PlanService
+    RouteChat --> GeminiClient
+    RouteExport --> ICSEngine
+
+    PlanService --> BudgetEngine
+    PlanService --> TimelineEngine
+    PlanService --> VendorEngine
+    PlanService --> GeminiClient
     
     AIEngine --> LRUCache
     LRUCache -.->|Cache Miss| GeminiClient
     GeminiClient <-->|Network Call| ExternalAPI
     GeminiClient -.->|On Failure or No Key| Fallback
     
-    DeterministicEngine --> MasterPlan["📦 Unified PlanResponse\n(Budget + Timeline + Vendors + Ideas + Warnings)"]
-    AIEngine --> MasterPlan
+    PlanService --> MasterPlan["📦 Unified PlanResponse\n(Budget + Timeline + Vendors + Ideas + Warnings)"]
     MasterPlan --> Gateway --> UI
 ```
 
