@@ -116,6 +116,21 @@
       <symbol id="icon-spinner" viewBox="0 0 24 24">
         <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
       </symbol>
+      <!-- Info -->
+      <symbol id="icon-info" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="16" x2="12" y2="12"/>
+        <line x1="12" y1="8" x2="12.01" y2="8"/>
+      </symbol>
+      <!-- Close / Cross -->
+      <symbol id="icon-close" viewBox="0 0 24 24">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </symbol>
+      <!-- Filter -->
+      <symbol id="icon-filter" viewBox="0 0 24 24">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+      </symbol>
     </defs>
   </svg>
 
@@ -396,89 +411,188 @@
       <section class="results-panel" aria-labelledby="results-heading">
         <div class="actions-bar">
           <h2 id="results-heading" style="font-size: 1.25rem;">Event Master Plan</h2>
-          <div class="controls-cluster" role="group" aria-label="Export and sharing options">
-            <button type="button" id="btn-export-ics" class="btn btn-sm">
+          <div class="actions-toolbar" role="toolbar" aria-label="Export and sharing options">
+            <button type="button" id="btn-export-ics" class="btn btn-sm btn-toolbar">
               <svg class="icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
               <span>Download .ics</span>
             </button>
-            <button type="button" id="btn-print-plan" class="btn btn-sm">
+            <button type="button" id="btn-print-plan" class="btn btn-sm btn-toolbar">
               <svg class="icon" aria-hidden="true"><use href="#icon-print"></use></svg>
               <span>Print / Save PDF</span>
             </button>
-            <button type="button" id="btn-copy-text" class="btn btn-sm">
-              <svg class="icon" aria-hidden="true"><use href="#icon-copy"></use></svg>
-              <span>Copy as text</span>
+            <button type="button" id="btn-copy-text" class="btn btn-sm btn-toolbar">
+              <svg class="icon" id="copy-icon" aria-hidden="true"><use href="#icon-copy"></use></svg>
+              <span id="copy-btn-text">Copy as text</span>
             </button>
           </div>
         </div>
 
-        <!-- Warning container -->
-        <div id="warnings-container"></div>
-
-        <!-- Tab Navigation (Proper ARIA Tabs Pattern) -->
-        <div class="tabs-list" role="tablist" aria-label="Plan details tabs">
-          <button type="button" class="tab-btn" role="tab" id="tab-budget" aria-selected="true" aria-controls="panel-budget" data-tab="budget" tabindex="0">
-            <svg class="icon" aria-hidden="true"><use href="#icon-budget"></use></svg>
-            <span>Budget</span>
-          </button>
-          <button type="button" class="tab-btn" role="tab" id="tab-timeline" aria-selected="false" aria-controls="panel-timeline" data-tab="timeline" tabindex="-1">
-            <svg class="icon" aria-hidden="true"><use href="#icon-timeline"></use></svg>
-            <span>Timeline</span>
-          </button>
-          <button type="button" class="tab-btn" role="tab" id="tab-vendors" aria-selected="false" aria-controls="panel-vendors" data-tab="vendors" tabindex="-1">
-            <svg class="icon" aria-hidden="true"><use href="#icon-vendors"></use></svg>
-            <span>Vendor Checklist</span>
-          </button>
-          <button type="button" class="tab-btn" role="tab" id="tab-ideas" aria-selected="false" aria-controls="panel-ideas" data-tab="ideas" tabindex="-1">
-            <svg class="icon" aria-hidden="true"><use href="#icon-sparkle"></use></svg>
-            <span>Creative Ideas</span>
-          </button>
-          <button type="button" class="tab-btn" role="tab" id="tab-chat" aria-selected="false" aria-controls="panel-chat" data-tab="chat" tabindex="-1">
-            <svg class="icon" aria-hidden="true"><use href="#icon-chat"></use></svg>
-            <span>Ask the Planner</span>
-          </button>
-        </div>
-
-        <!-- Tab Panel 1: Budget (Table + Accessible Bar Chart) -->
-        <div id="panel-budget" class="tab-content active" role="tabpanel" aria-labelledby="tab-budget" tabindex="0">
-          <div id="budget-output">
-            <!-- Dynamically populated via app.js -->
+        <!-- Empty State (Shown before first plan generation) -->
+        <div id="results-empty-state" class="results-empty-state">
+          <div class="empty-state-graphic">
+            <svg class="empty-state-svg" viewBox="0 0 120 120" role="img" aria-hidden="true">
+              <defs>
+                <linearGradient id="empty-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.8"/>
+                  <stop offset="100%" stop-color="var(--primary)" stop-opacity="0.15"/>
+                </linearGradient>
+              </defs>
+              <circle cx="60" cy="60" r="54" fill="url(#empty-grad)"/>
+              <rect x="36" y="28" width="48" height="64" rx="6" fill="var(--surface)" stroke="var(--primary)" stroke-width="2"/>
+              <line x1="46" y1="44" x2="74" y2="44" stroke="var(--border)" stroke-width="2" stroke-linecap="round"/>
+              <line x1="46" y1="54" x2="74" y2="54" stroke="var(--border)" stroke-width="2" stroke-linecap="round"/>
+              <line x1="46" y1="64" x2="66" y2="64" stroke="var(--border)" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="78" cy="74" r="14" fill="var(--primary)" stroke="var(--surface)" stroke-width="2"/>
+              <path d="M74 74l3 3 6-6" fill="none" stroke="var(--primary-contrast)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="48" y="24" width="24" height="8" rx="2" fill="var(--primary)"/>
+            </svg>
+          </div>
+          <h3 class="empty-state-title">Your Event Master Plan Awaits</h3>
+          <p class="empty-state-desc">
+            Complete the event details on the left to generate an accessible budget, backwards-scheduled timeline, vendor checklist, and creative ideas. Or explore instantly with a pre-configured scenario:
+          </p>
+          <div class="sample-scenarios-group" role="group" aria-label="Sample planning scenarios">
+            <button type="button" class="btn btn-outline scenario-btn" data-scenario="tight-wedding">
+              <span class="scenario-btn-title">Tight-Budget Wedding</span>
+              <span class="scenario-btn-meta">60 guests · $10,000 · Rustic Charm</span>
+            </button>
+            <button type="button" class="btn btn-outline scenario-btn" data-scenario="milestone-birthday">
+              <span class="scenario-btn-title">Milestone 30th Birthday</span>
+              <span class="scenario-btn-meta">40 guests · $4,500 · Rooftop Lounge</span>
+            </button>
+            <button type="button" class="btn btn-outline scenario-btn" data-scenario="community-fest">
+              <span class="scenario-btn-title">Community Arts Festival</span>
+              <span class="scenario-btn-meta">350 guests · $18,000 · Garden Party</span>
+            </button>
           </div>
         </div>
 
-        <!-- Tab Panel 2: Timeline -->
-        <div id="panel-timeline" class="tab-content" role="tabpanel" aria-labelledby="tab-timeline" tabindex="0" hidden>
-          <div id="timeline-output">
-            <!-- Dynamically populated via app.js -->
+        <!-- Skeleton Loading State (Shown while request is active) -->
+        <div id="results-skeleton" class="results-skeleton" aria-busy="true" aria-label="Crafting your event plan..." hidden>
+          <div class="skeleton-kpis">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+          <div class="skeleton-tabs">
+            <div class="skeleton-tab"></div>
+            <div class="skeleton-tab"></div>
+            <div class="skeleton-tab"></div>
+            <div class="skeleton-tab"></div>
+          </div>
+          <div class="skeleton-body">
+            <div class="skeleton-line skeleton-title"></div>
+            <div class="skeleton-block"></div>
           </div>
         </div>
 
-        <!-- Tab Panel 3: Vendor Checklist -->
-        <div id="panel-vendors" class="tab-content" role="tabpanel" aria-labelledby="tab-vendors" tabindex="0" hidden>
-          <div id="vendors-output">
-            <!-- Dynamically populated via app.js -->
+        <!-- Results Content Container (Shown once plan is available) -->
+        <div id="results-content" hidden>
+          <!-- 4 KPI Cards -->
+          <div class="kpi-grid" id="kpi-grid" role="region" aria-label="Key event metrics">
+            <div class="kpi-card" id="kpi-total-budget">
+              <div class="kpi-label">Total Budget</div>
+              <div class="kpi-value" id="kpi-val-budget">$25,000</div>
+              <div class="kpi-sub" id="kpi-sub-budget">USD Currency</div>
+            </div>
+            <div class="kpi-card" id="kpi-per-guest">
+              <div class="kpi-label">Per Guest Spend</div>
+              <div class="kpi-value" id="kpi-val-guest">$312</div>
+              <div class="kpi-sub" id="kpi-sub-guest">80 guests planned</div>
+            </div>
+            <div class="kpi-card" id="kpi-contingency">
+              <div class="kpi-label">Contingency Reserved</div>
+              <div class="kpi-value" id="kpi-val-contingency">$2,500</div>
+              <div class="kpi-sub" id="kpi-sub-contingency">10% buffer fund</div>
+            </div>
+            <div class="kpi-card" id="kpi-countdown">
+              <div class="kpi-label">Days Until Event</div>
+              <div class="kpi-value" id="kpi-val-days">180 Days</div>
+              <div class="kpi-sub" id="kpi-sub-date">Oct 25, 2026</div>
+            </div>
           </div>
-        </div>
 
-        <!-- Tab Panel 4: Ideas -->
-        <div id="panel-ideas" class="tab-content" role="tabpanel" aria-labelledby="tab-ideas" tabindex="0" hidden>
-          <div id="ideas-output">
-            <!-- Dynamically populated via app.js -->
+          <!-- Dismissible Alert Region -->
+          <div id="warnings-container" role="region" aria-label="Planning alerts and notices"></div>
+
+          <!-- Tab Navigation (Proper ARIA Tabs Pattern) -->
+          <div class="tabs-list" role="tablist" aria-label="Plan details tabs">
+            <button type="button" class="tab-btn" role="tab" id="tab-budget" aria-selected="true" aria-controls="panel-budget" data-tab="budget" tabindex="0">
+              <svg class="icon" aria-hidden="true"><use href="#icon-budget"></use></svg>
+              <span>Budget</span>
+            </button>
+            <button type="button" class="tab-btn" role="tab" id="tab-timeline" aria-selected="false" aria-controls="panel-timeline" data-tab="timeline" tabindex="-1">
+              <svg class="icon" aria-hidden="true"><use href="#icon-timeline"></use></svg>
+              <span>Timeline</span>
+            </button>
+            <button type="button" class="tab-btn" role="tab" id="tab-vendors" aria-selected="false" aria-controls="panel-vendors" data-tab="vendors" tabindex="-1">
+              <svg class="icon" aria-hidden="true"><use href="#icon-vendors"></use></svg>
+              <span>Vendor Checklist</span>
+            </button>
+            <button type="button" class="tab-btn" role="tab" id="tab-ideas" aria-selected="false" aria-controls="panel-ideas" data-tab="ideas" tabindex="-1">
+              <svg class="icon" aria-hidden="true"><use href="#icon-sparkle"></use></svg>
+              <span>Creative Ideas</span>
+            </button>
+            <button type="button" class="tab-btn" role="tab" id="tab-chat" aria-selected="false" aria-controls="panel-chat" data-tab="chat" tabindex="-1">
+              <svg class="icon" aria-hidden="true"><use href="#icon-chat"></use></svg>
+              <span>Ask the Planner</span>
+            </button>
           </div>
-        </div>
 
-        <!-- Tab Panel 5: Ask the Planner Chat -->
-        <div id="panel-chat" class="tab-content" role="tabpanel" aria-labelledby="tab-chat" tabindex="0" hidden>
-          <div class="chat-box">
-            <div id="chat-conversation" class="chat-log" role="log" aria-label="Conversation with planner"></div>
-            <form id="chat-query-form" style="display: flex; gap: 8px;">
-              <label for="chat-input" class="sr-status">Ask the planner a question</label>
-              <input type="text" id="chat-input" class="form-control" maxlength="300" placeholder="Ask about timeline buffers, vendor vetting, or catering..." required>
-              <button type="submit" class="btn btn-primary btn-sm">
-                <svg class="icon" aria-hidden="true"><use href="#icon-chat"></use></svg>
-                <span>Send</span>
-              </button>
-            </form>
+          <!-- Tab Panel 1: Budget -->
+          <div id="panel-budget" class="tab-content active" role="tabpanel" aria-labelledby="tab-budget" tabindex="0">
+            <div id="budget-output">
+              <!-- Dynamically populated via app.js -->
+            </div>
+          </div>
+
+          <!-- Tab Panel 2: Timeline -->
+          <div id="panel-timeline" class="tab-content" role="tabpanel" aria-labelledby="tab-timeline" tabindex="0" hidden>
+            <div id="timeline-output">
+              <!-- Dynamically populated via app.js -->
+            </div>
+          </div>
+
+          <!-- Tab Panel 3: Vendor Checklist -->
+          <div id="panel-vendors" class="tab-content" role="tabpanel" aria-labelledby="tab-vendors" tabindex="0" hidden>
+            <div id="vendors-output">
+              <!-- Dynamically populated via app.js -->
+            </div>
+          </div>
+
+          <!-- Tab Panel 4: Ideas -->
+          <div id="panel-ideas" class="tab-content" role="tabpanel" aria-labelledby="tab-ideas" tabindex="0" hidden>
+            <div id="ideas-output">
+              <!-- Dynamically populated via app.js -->
+            </div>
+          </div>
+
+          <!-- Tab Panel 5: Ask the Planner Chat -->
+          <div id="panel-chat" class="tab-content" role="tabpanel" aria-labelledby="tab-chat" tabindex="0" hidden>
+            <div class="chat-box">
+              <div id="chat-conversation" class="chat-log" role="log" aria-live="polite" aria-label="Conversation with planner"></div>
+              
+              <!-- Suggested Questions Cluster -->
+              <div class="chat-suggestions-area">
+                <span class="chat-suggestions-label">Suggested Questions:</span>
+                <div class="chat-chips-group" role="group" aria-label="Suggested planning questions">
+                  <button type="button" class="chip-pill chat-chip">How should I split catering vs venue?</button>
+                  <button type="button" class="chip-pill chat-chip">What questions should I ask photographers?</button>
+                  <button type="button" class="chip-pill chat-chip">How much contingency buffer for weather?</button>
+                  <button type="button" class="chip-pill chat-chip">Tips for eco-friendly decor?</button>
+                </div>
+              </div>
+
+              <form id="chat-query-form" style="display: flex; gap: 8px;">
+                <label for="chat-input" class="sr-status">Ask the planner a question</label>
+                <input type="text" id="chat-input" class="form-control" maxlength="300" placeholder="Ask about timeline buffers, vendor vetting, or catering..." required>
+                <button type="submit" id="chat-send-btn" class="btn btn-primary btn-sm">
+                  <svg class="icon" aria-hidden="true"><use href="#icon-chat"></use></svg>
+                  <span>Send</span>
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </section>
