@@ -5,6 +5,14 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.constants import (
+    MAX_CITY_LENGTH,
+    MAX_GUEST_COUNT,
+    MAX_NOTES_LENGTH,
+    MAX_PRIORITIES_COUNT,
+    MAX_VIBE_LENGTH,
+    MIN_GUEST_COUNT,
+)
 from app.sanitizer import sanitize_raw_text
 
 VALID_PRIORITIES = {"venue", "food", "decor", "photography", "entertainment", "other"}
@@ -36,14 +44,14 @@ class EventRequest(BaseModel):
 
     event_type: EventType
     event_date: date
-    guest_count: int = Field(..., ge=1, le=2000)
+    guest_count: int = Field(..., ge=MIN_GUEST_COUNT, le=MAX_GUEST_COUNT)
     total_budget: float = Field(..., gt=0.0)
     currency: str = Field(default="INR", max_length=10)
-    city: str = Field(default="", max_length=100)
-    vibe: str = Field(default="modern", max_length=80)
+    city: str = Field(default="", max_length=MAX_CITY_LENGTH)
+    vibe: str = Field(default="modern", max_length=MAX_VIBE_LENGTH)
     dietary: list[str] = Field(default_factory=list)
     priorities: list[str] = Field(default_factory=list)
-    notes: str | None = Field(default="", max_length=500)
+    notes: str | None = Field(default="", max_length=MAX_NOTES_LENGTH)
 
     @field_validator("event_date")
     @classmethod
@@ -56,9 +64,9 @@ class EventRequest(BaseModel):
     @field_validator("priorities")
     @classmethod
     def validate_priorities(cls, v: list[str]) -> list[str]:
-        """Validate maximum 3 priorities from the allowed set."""
-        if len(v) > 3:
-            raise ValueError("priorities cannot exceed 3 items")
+        """Validate maximum priorities from the allowed set."""
+        if len(v) > MAX_PRIORITIES_COUNT:
+            raise ValueError(f"priorities cannot exceed {MAX_PRIORITIES_COUNT} items")
         cleaned = []
         for p in v:
             norm = p.strip().lower()
@@ -73,7 +81,7 @@ class EventRequest(BaseModel):
     @classmethod
     def sanitize_strings(cls, v: str | None) -> str:
         """Sanitize control chars and clamp length."""
-        return sanitize_raw_text(v or "", max_length=500)
+        return sanitize_raw_text(v or "", max_length=MAX_NOTES_LENGTH)
 
 
 class BudgetItem(BaseModel):

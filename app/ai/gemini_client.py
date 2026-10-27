@@ -11,11 +11,12 @@ from app.ai.fallback import get_fallback_chat, get_fallback_ideas
 from app.ai.prompts import build_chat_prompt, build_ideas_prompt
 from app.ai.schemas import ChatRefineResponse, IdeasRequest, IdeasResponse
 from app.config import get_settings
+from app.constants import DEFAULT_CACHE_MAX_SIZE, DEFAULT_RETRY_ATTEMPTS
 from app.sanitizer import sanitize_raw_text
 
 # In-memory thread-safe LRU cache for ideas and chat queries
 _CACHE: OrderedDict[str, object] = OrderedDict()
-_CACHE_MAX_SIZE = 128
+_CACHE_MAX_SIZE = DEFAULT_CACHE_MAX_SIZE
 
 
 def _get_cache(key: str) -> object | None:
@@ -39,7 +40,7 @@ def clear_cache() -> None:
     _CACHE.clear()
 
 
-def compute_request_hash(data: dict) -> str:
+def compute_request_hash(data: dict[str, object]) -> str:
     """Compute deterministic SHA-256 hash for request payload."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
@@ -54,14 +55,14 @@ def _get_client() -> genai.Client | None:
 
 
 def _call_gemini_ideas_with_retry(client: genai.Client, prompt: str) -> IdeasResponse:
-    """Execute Gemini request with response schema and 1 retry on failure."""
+    """Execute Gemini request with response schema and retries on failure."""
     settings = get_settings()
     cfg = types.GenerateContentConfig(
         response_mime_type="application/json",
         response_schema=IdeasResponse,
     )
     last_err: Exception | None = None
-    for _ in range(2):
+    for _ in range(DEFAULT_RETRY_ATTEMPTS):
         try:
             response = client.models.generate_content(model=settings.gemini_model, contents=prompt, config=cfg)
             raw_text = response.text or "{}"

@@ -28,8 +28,14 @@ jobs:
       - name: Run Ruff Lint Check
         run: ruff check .
 
+      - name: Run Ruff Cyclomatic Complexity Check (C901)
+        run: ruff check --select C901 app
+
       - name: Run Ruff Format Check
         run: ruff format --check .
+
+      - name: Run Strict Mypy Type Check
+        run: mypy --strict app
 
       - name: Run Tests with Coverage Enforcement (>=90%)
         run: |

@@ -1,15 +1,24 @@
 """Pure deterministic vendor checklist and booking deadline engine."""
 
 from datetime import date, timedelta
+from typing import NamedTuple
 
-from app.engine.profiles import DEFAULT_VENDOR_BUDGET_RATIO
+from app.constants import DEFAULT_VENDOR_BUDGET_RATIO
 from app.models import BudgetResponse, EventRequest, EventType, VendorChecklistItem
 
 
-def _wedding_vendor_specs() -> list[tuple[str, int, list[str]]]:
+class VendorSpec(NamedTuple):
+    """Specification template for vendor checklist generation."""
+
+    category: str
+    lead_time_days: int
+    interview_prompts: list[str]
+
+
+def _wedding_vendor_specs() -> list[VendorSpec]:
     """Return wedding vendor lead times and essential interview questions."""
     return [
-        (
+        VendorSpec(
             "Venue & Facility",
             210,
             [
@@ -18,7 +27,7 @@ def _wedding_vendor_specs() -> list[tuple[str, int, list[str]]]:
                 "What bad-weather indoor backup room is guaranteed?",
             ],
         ),
-        (
+        VendorSpec(
             "Catering & Bar",
             150,
             [
@@ -27,7 +36,7 @@ def _wedding_vendor_specs() -> list[tuple[str, int, list[str]]]:
                 "Are menu tastings, table linens, and tableware included?",
             ],
         ),
-        (
+        VendorSpec(
             "Photography & Video",
             120,
             [
@@ -36,7 +45,7 @@ def _wedding_vendor_specs() -> list[tuple[str, int, list[str]]]:
                 "Do you provide a full release for personal printing rights?",
             ],
         ),
-        (
+        VendorSpec(
             "Entertainment & Music",
             90,
             [
@@ -48,10 +57,10 @@ def _wedding_vendor_specs() -> list[tuple[str, int, list[str]]]:
     ]
 
 
-def _birthday_vendor_specs() -> list[tuple[str, int, list[str]]]:
+def _birthday_vendor_specs() -> list[VendorSpec]:
     """Return birthday vendor lead times and questions."""
     return [
-        (
+        VendorSpec(
             "Venue & Space",
             45,
             [
@@ -60,7 +69,7 @@ def _birthday_vendor_specs() -> list[tuple[str, int, list[str]]]:
                 "Is AV equipment available for photo slideshows?",
             ],
         ),
-        (
+        VendorSpec(
             "Food & Beverages",
             30,
             [
@@ -69,7 +78,7 @@ def _birthday_vendor_specs() -> list[tuple[str, int, list[str]]]:
                 "What is the deadline for final guest count adjustments?",
             ],
         ),
-        (
+        VendorSpec(
             "Entertainment & DJ",
             21,
             [
@@ -81,10 +90,10 @@ def _birthday_vendor_specs() -> list[tuple[str, int, list[str]]]:
     ]
 
 
-def _community_vendor_specs() -> list[tuple[str, int, list[str]]]:
+def _community_vendor_specs() -> list[VendorSpec]:
     """Return community event vendor lead times and questions."""
     return [
-        (
+        VendorSpec(
             "Permits & Staging",
             60,
             [
@@ -93,7 +102,7 @@ def _community_vendor_specs() -> list[tuple[str, int, list[str]]]:
                 "What is the delivery, installation, and inspection schedule?",
             ],
         ),
-        (
+        VendorSpec(
             "Sound & Production",
             45,
             [
@@ -102,7 +111,7 @@ def _community_vendor_specs() -> list[tuple[str, int, list[str]]]:
                 "Will a licensed sound engineer remain stationed during the event?",
             ],
         ),
-        (
+        VendorSpec(
             "Refreshments & Food",
             30,
             [
@@ -114,7 +123,7 @@ def _community_vendor_specs() -> list[tuple[str, int, list[str]]]:
     ]
 
 
-def _get_vendor_specs(event_type: EventType) -> list[tuple[str, int, list[str]]]:
+def _get_vendor_specs(event_type: EventType) -> list[VendorSpec]:
     """Dispatch vendor templates by event category."""
     if event_type == EventType.WEDDING:
         return _wedding_vendor_specs()
@@ -139,13 +148,13 @@ def build_vendor_checklist(req: EventRequest, budget: BudgetResponse) -> list[Ve
     cat_budgets: dict[str, float] = {item.category.lower(): item.allocated_amount for item in budget.items}
 
     checklist: list[VendorChecklistItem] = []
-    for cat_name, lead_days, questions in specs:
-        deadline = req.event_date - timedelta(days=lead_days)
+    for spec in specs:
+        deadline = req.event_date - timedelta(days=spec.lead_time_days)
         actual_deadline = max(today, deadline)
 
         matched_cap = 0.0
         for b_name, b_amt in cat_budgets.items():
-            if any(k in b_name for k in cat_name.lower().split()):
+            if any(k in b_name for k in spec.category.lower().split()):
                 matched_cap = b_amt
                 break
         if matched_cap == 0.0:
@@ -153,11 +162,11 @@ def build_vendor_checklist(req: EventRequest, budget: BudgetResponse) -> list[Ve
 
         checklist.append(
             VendorChecklistItem(
-                category=cat_name,
+                category=spec.category,
                 budget_cap=matched_cap,
                 booking_deadline=actual_deadline,
-                lead_time_days=lead_days,
-                questions_to_ask=questions,
+                lead_time_days=spec.lead_time_days,
+                questions_to_ask=spec.interview_prompts,
                 status="todo",
             )
         )

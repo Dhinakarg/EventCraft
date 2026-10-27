@@ -1,29 +1,48 @@
 """Pure deterministic budget allocation and feasibility engine."""
 
-from app.engine.profiles import (
+from typing import NamedTuple
+
+from app.constants import (
     DEFAULT_CONTINGENCY_RATE,
     MAX_CONTINGENCY_RATE,
     MIN_CONTINGENCY_RATE,
     PRIORITY_BOOST_MULTIPLIER,
+)
+from app.engine.profiles import (
+    ProfileCategory,
     get_budget_profile,
     get_min_per_guest_threshold,
 )
 from app.models import BudgetItem, BudgetResponse, EventRequest, EventType
 
 
+class FeasibilityResult(NamedTuple):
+    """Feasibility outcome and recommendation notes."""
+
+    is_feasible: bool
+    notes: list[str]
+
+
+class BudgetBuildResult(NamedTuple):
+    """Constructed budget items and extracted contingency fund."""
+
+    items: list[BudgetItem]
+    contingency_fund: float
+
+
 def _calculate_shifted_weights(
-    profile: list[tuple[str, float, str, str]],
+    profile: list[ProfileCategory],
     priorities: list[str],
     contingency_rate: float,
 ) -> dict[str, float]:
     """Shift category weights based on user priorities and renormalize to 100%."""
-    non_contingency = [item for item in profile if item[2] != "contingency"]
+    non_contingency = [item for item in profile if item.priority_key != "contingency"]
     target_non_contingency_sum = 100.0 - contingency_rate
 
     raw_weights: dict[str, float] = {}
-    for cat, base_pct, p_key, _ in non_contingency:
-        multiplier = PRIORITY_BOOST_MULTIPLIER if p_key in priorities else 1.0
-        raw_weights[cat] = base_pct * multiplier
+    for item in non_contingency:
+        multiplier = PRIORITY_BOOST_MULTIPLIER if item.priority_key in priorities else 1.0
+        raw_weights[item.category] = item.standard_percentage * multiplier
 
     raw_sum = sum(raw_weights.values())
     normalized: dict[str, float] = {}
@@ -31,8 +50,8 @@ def _calculate_shifted_weights(
         normalized[cat] = (val / raw_sum) * target_non_contingency_sum
 
     for item in profile:
-        if item[2] == "contingency":
-            normalized[item[0]] = contingency_rate
+        if item.priority_key == "contingency":
+            normalized[item.category] = contingency_rate
     return normalized
 
 
@@ -48,12 +67,12 @@ def _balance_penny_discrepancy(amounts: list[float], total_budget: float) -> lis
 
 def _check_feasibility(
     event_type: EventType, total_budget: float, guest_count: int, currency: str = "INR"
-) -> tuple[bool, list[str]]:
+) -> FeasibilityResult:
     """Determine financial feasibility and offer concrete suggestions if underfunded."""
     per_guest = round(total_budget / max(guest_count, 1), 2)
     min_thresh = get_min_per_guest_threshold(event_type)
     if per_guest >= min_thresh:
-        return True, ["Budget is healthy and realistic for the projected guest count."]
+        return FeasibilityResult(True, ["Budget is healthy and realistic for the projected guest count."])
 
     alert_msg = (
         f"Budget alert: Per-guest cost ({currency} {per_guest:,.2f}) is below "
@@ -65,35 +84,35 @@ def _check_feasibility(
         "Suggestion: Shorten event duration or select off-peak weekday/Sunday time slots.",
         "Suggestion: Adopt DIY floral and table decor to maximize hospitality and catering funds.",
     ]
-    return False, suggestions
+    return FeasibilityResult(False, suggestions)
 
 
 def _build_budget_items(
-    profile: list[tuple[str, float, str, str]],
+    profile: list[ProfileCategory],
     balanced_amounts: list[float],
     req: EventRequest,
-) -> tuple[list[BudgetItem], float]:
+) -> BudgetBuildResult:
     """Construct BudgetItem list and extract contingency fund amount."""
     items: list[BudgetItem] = []
     contingency_fund = 0.0
-    for idx, (cat, _, p_key, desc) in enumerate(profile):
+    for idx, item in enumerate(profile):
         amt = balanced_amounts[idx]
         pct = round((amt / req.total_budget) * 100.0, 2)
-        if p_key == "contingency":
+        if item.priority_key == "contingency":
             contingency_fund = amt
-        priority_label = "High" if p_key in req.priorities else "Medium"
+        priority_label = "High" if item.priority_key in req.priorities else "Medium"
         tip = f"Target ~{req.currency} {amt:,.2f} ({pct}%)."
         items.append(
             BudgetItem(
-                category=cat,
+                category=item.category,
                 percentage=pct,
                 allocated_amount=amt,
-                description=desc,
+                description=item.description,
                 priority=priority_label,
                 tips=tip,
             )
         )
-    return items, contingency_fund
+    return BudgetBuildResult(items, contingency_fund)
 
 
 def allocate_event_budget(req: EventRequest, contingency_rate: float = DEFAULT_CONTINGENCY_RATE) -> BudgetResponse:
@@ -110,19 +129,19 @@ def allocate_event_budget(req: EventRequest, contingency_rate: float = DEFAULT_C
     profile = get_budget_profile(req.event_type)
     weights = _calculate_shifted_weights(profile, req.priorities, contingency_rate)
 
-    raw_amounts = [round(req.total_budget * (weights[item[0]] / 100.0), 2) for item in profile]
+    raw_amounts = [round(req.total_budget * (weights[item.category] / 100.0), 2) for item in profile]
     balanced_amounts = _balance_penny_discrepancy(raw_amounts, req.total_budget)
 
-    items, contingency_fund = _build_budget_items(profile, balanced_amounts, req)
-    is_feasible, notes = _check_feasibility(req.event_type, req.total_budget, req.guest_count, req.currency)
+    build_res = _build_budget_items(profile, balanced_amounts, req)
+    feasibility = _check_feasibility(req.event_type, req.total_budget, req.guest_count, req.currency)
 
     return BudgetResponse(
         total_budget=round(req.total_budget, 2),
         per_guest_cost=round(req.total_budget / req.guest_count, 2),
         currency=req.currency,
-        contingency_fund=contingency_fund,
+        contingency_fund=build_res.contingency_fund,
         contingency_percentage=contingency_rate,
-        is_feasible=is_feasible,
-        feasibility_notes=notes,
-        items=items,
+        is_feasible=feasibility.is_feasible,
+        feasibility_notes=feasibility.notes,
+        items=build_res.items,
     )

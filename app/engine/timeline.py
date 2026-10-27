@@ -1,52 +1,63 @@
 """Pure deterministic backward-scheduled timeline engine with compression."""
 
 from datetime import date, timedelta
+from typing import NamedTuple
 
 from app.engine.profiles import get_standard_lead_time
 from app.models import EventRequest, EventType, TimelineResponse, TimelineTask
 
 
-def _get_wedding_task_templates() -> list[tuple[str, str, str, int, bool]]:
+class TaskTemplate(NamedTuple):
+    """Milestone task template for backward scheduling."""
+
+    id: str
+    title: str
+    phase: str
+    days_before_event: int
+    is_critical: bool
+
+
+def _get_wedding_task_templates() -> list[TaskTemplate]:
     """Return wedding tasks (id, title, phase, std_days_before, is_critical)."""
     return [
-        ("w1", "Tour and lock ceremony & reception venue", "Vision & Venue", 270, True),
-        ("w2", "Interview and contract caterer and bar", "Vendor Sourcing", 210, True),
-        ("w3", "Book lead photographer and videographer", "Vendor Sourcing", 180, True),
-        ("w4", "Finalize floral designer and color palette", "Design & Decor", 120, False),
-        ("w5", "Mail invitations and open digital RSVP portal", "Guest Logistics", 90, True),
-        ("w6", "Order custom favors and personalized signage", "Design & Decor", 45, False),
-        ("w7", "Submit final headcount to caterer and venue", "Final Countdown", 21, True),
-        ("w8", "Conduct wedding rehearsal and distribute day run-of-show", "Event Week", 3, True),
+        TaskTemplate("w1", "Tour and lock ceremony & reception venue", "Vision & Venue", 270, True),
+        TaskTemplate("w2", "Interview and contract caterer and bar", "Vendor Sourcing", 210, True),
+        TaskTemplate("w3", "Book lead photographer and videographer", "Vendor Sourcing", 180, True),
+        TaskTemplate("w4", "Finalize floral designer and color palette", "Design & Decor", 120, False),
+        TaskTemplate("w5", "Mail invitations and open digital RSVP portal", "Guest Logistics", 90, True),
+        TaskTemplate("w6", "Order custom favors and personalized signage", "Design & Decor", 45, False),
+        TaskTemplate("w7", "Submit final headcount to caterer and venue", "Final Countdown", 21, True),
+        TaskTemplate("w8", "Conduct wedding rehearsal and distribute day run-of-show", "Event Week", 3, True),
     ]
 
 
-def _get_birthday_task_templates() -> list[tuple[str, str, str, int, bool]]:
+def _get_birthday_task_templates() -> list[TaskTemplate]:
     """Return birthday tasks (id, title, phase, std_days_before, is_critical)."""
     return [
-        ("b1", "Reserve private lounge, hall or dining venue", "Initial Setup", 60, True),
-        ("b2", "Order custom birthday cake and select menu", "Food & Beverage", 40, True),
-        ("b3", "Book DJ, performer or entertainment package", "Entertainment", 30, True),
-        ("b4", "Distribute digital invitations and gather RSVPs", "Invitations", 25, True),
-        ("b5", "Order customized balloon arches and backdrop decor", "Decor", 14, False),
-        ("b6", "Assemble party favor bags and game props", "Preparation", 7, False),
-        ("b7", "Confirm cake pickup and venue arrival time", "Event Day Prep", 2, True),
+        TaskTemplate("b1", "Reserve private lounge, hall or dining venue", "Initial Setup", 60, True),
+        TaskTemplate("b2", "Order custom birthday cake and select menu", "Food & Beverage", 40, True),
+        TaskTemplate("b3", "Book DJ, performer or entertainment package", "Entertainment", 30, True),
+        TaskTemplate("b4", "Distribute digital invitations and gather RSVPs", "Invitations", 25, True),
+        TaskTemplate("b5", "Order customized balloon arches and backdrop decor", "Decor", 14, False),
+        TaskTemplate("b6", "Assemble party favor bags and game props", "Preparation", 7, False),
+        TaskTemplate("b7", "Confirm cake pickup and venue arrival time", "Event Day Prep", 2, True),
     ]
 
 
-def _get_community_task_templates() -> list[tuple[str, str, str, int, bool]]:
+def _get_community_task_templates() -> list[TaskTemplate]:
     """Return community tasks (id, title, phase, std_days_before, is_critical)."""
     return [
-        ("c1", "File municipal sound, park, and road permits", "Permits & Safety", 90, True),
-        ("c2", "Secure local sponsors and confirm event grants", "Budget & Sponsors", 75, True),
-        ("c3", "Reserve sound staging, generators, and restrooms", "Logistics", 60, True),
-        ("c4", "Recruit and assign volunteer zone leaders", "Staffing", 35, True),
-        ("c5", "Distribute flyers and publicize on neighborhood boards", "Outreach", 21, False),
-        ("c6", "Conduct safety walkthrough and emergency briefing", "Safety & Prep", 7, True),
-        ("c7", "Set up first-aid tent and registration tables", "Site Staging", 1, True),
+        TaskTemplate("c1", "File municipal sound, park, and road permits", "Permits & Safety", 90, True),
+        TaskTemplate("c2", "Secure local sponsors and confirm event grants", "Budget & Sponsors", 75, True),
+        TaskTemplate("c3", "Reserve sound staging, generators, and restrooms", "Logistics", 60, True),
+        TaskTemplate("c4", "Recruit and assign volunteer zone leaders", "Staffing", 35, True),
+        TaskTemplate("c5", "Distribute flyers and publicize on neighborhood boards", "Outreach", 21, False),
+        TaskTemplate("c6", "Conduct safety walkthrough and emergency briefing", "Safety & Prep", 7, True),
+        TaskTemplate("c7", "Set up first-aid tent and registration tables", "Site Staging", 1, True),
     ]
 
 
-def _get_task_templates(event_type: EventType) -> list[tuple[str, str, str, int, bool]]:
+def _get_task_templates(event_type: EventType) -> list[TaskTemplate]:
     """Dispatch task templates for event type."""
     if event_type == EventType.WEDDING:
         return _get_wedding_task_templates()
@@ -56,7 +67,7 @@ def _get_task_templates(event_type: EventType) -> list[tuple[str, str, str, int,
 
 
 def _build_timeline_task(
-    template: tuple[str, str, str, int, bool],
+    template: TaskTemplate,
     event_date: date,
     scale: float,
     is_compressed: bool,
@@ -64,31 +75,32 @@ def _build_timeline_task(
 ) -> TimelineTask:
     """Build single TimelineTask with computed due date and urgency labels."""
     today = date.today()
-    t_id, title, phase, std_days, is_crit = template
-    target_days = max(1, int(round(std_days * scale))) if is_compressed else std_days
+    target_days = (
+        max(1, int(round(template.days_before_event * scale))) if is_compressed else template.days_before_event
+    )
     target_days = min(target_days, available_days)
     computed_due = event_date - timedelta(days=target_days)
     actual_due = max(today, computed_due)
 
     if is_compressed:
-        p_label = "Urgent Critical" if is_crit else "Deferred / Optional"
+        p_label = "Urgent Critical" if template.is_critical else "Deferred / Optional"
     else:
-        p_label = "High Priority" if is_crit else "Standard"
+        p_label = "High Priority" if template.is_critical else "Standard"
 
     return TimelineTask(
-        id=t_id,
-        title=title,
-        phase=phase,
+        id=template.id,
+        title=template.title,
+        phase=template.phase,
         due_date=actual_due,
         days_before_event=target_days,
         priority=p_label,
-        is_critical=is_crit,
+        is_critical=template.is_critical,
         status="todo",
     )
 
 
 def _schedule_tasks_backward(
-    templates: list[tuple[str, str, str, int, bool]],
+    templates: list[TaskTemplate],
     event_date: date,
     available_days: int,
     std_lead: int,

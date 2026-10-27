@@ -7,10 +7,12 @@ from fastapi import FastAPI, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 from app.ai.gemini_client import generate_event_ideas, refine_plan_chat
 from app.ai.schemas import ChatRefineRequest, ChatRefineResponse, IdeasRequest
 from app.config import get_settings
+from app.constants import MAX_GUEST_COUNT, MIN_GUEST_COUNT
 from app.engine.budget import allocate_event_budget
 from app.engine.ics import generate_ics_calendar
 from app.engine.timeline import create_backward_timeline
@@ -20,6 +22,14 @@ from app.security import SecurityHeadersMiddleware, generic_exception_handler
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / "static"
+
+
+class HealthResponse(BaseModel):
+    """Operational health status model."""
+
+    status: str
+    service: str
+    model: str
 
 
 def _build_warnings(budget_feasible: bool, b_notes: list[str], rush_warn: str | None) -> list[str]:
@@ -32,10 +42,10 @@ def _build_warnings(budget_feasible: bool, b_notes: list[str], rush_warn: str | 
     return warns
 
 
-def health_endpoint() -> dict:
+def health_endpoint() -> HealthResponse:
     """Return operational health status."""
     settings = get_settings()
-    return {"status": "healthy", "service": "eventcraft-ai", "model": settings.gemini_model}
+    return HealthResponse(status="healthy", service="eventcraft-ai", model=settings.gemini_model)
 
 
 def create_event_plan(req: EventRequest) -> PlanResponse:
@@ -86,7 +96,7 @@ def chat_endpoint(req: ChatRefineRequest) -> ChatRefineResponse:
 def export_timeline_ics(
     event_date: date = Query(...),
     event_type: EventType = Query(default=EventType.WEDDING),
-    guest_count: int = Query(default=100, ge=1, le=2000),
+    guest_count: int = Query(default=100, ge=MIN_GUEST_COUNT, le=MAX_GUEST_COUNT),
     total_budget: float = Query(default=10000.0, gt=0),
     vibe: str = Query(default="Modern"),
 ) -> Response:
