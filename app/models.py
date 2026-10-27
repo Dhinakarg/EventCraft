@@ -38,7 +38,7 @@ class EventRequest(BaseModel):
     event_date: date
     guest_count: int = Field(..., ge=1, le=2000)
     total_budget: float = Field(..., gt=0.0)
-    currency: str = Field(default="USD", max_length=10)
+    currency: str = Field(default="INR", max_length=10)
     city: str = Field(default="", max_length=100)
     vibe: str = Field(default="modern", max_length=80)
     dietary: list[str] = Field(default_factory=list)

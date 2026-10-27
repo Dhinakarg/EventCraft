@@ -107,7 +107,7 @@ function updateBudgetPreviews() {
   const total = parseFloat(document.getElementById("budget_total").value) || 0;
   const guests = parseInt(document.getElementById("guest_count").value, 10) || 1;
   const perGuest = Math.round(total / Math.max(guests, 1));
-  document.getElementById("per_guest_preview").textContent = `~$${perGuest}/guest`;
+  document.getElementById("per_guest_preview").textContent = `~₹${perGuest.toLocaleString("en-IN")}/guest`;
 }
 
 /**
@@ -181,7 +181,7 @@ function getFormData() {
     event_date: document.getElementById("event_date").value,
     guest_count: parseInt(document.getElementById("guest_count").value, 10),
     total_budget: parseFloat(document.getElementById("budget_total").value),
-    currency: "USD",
+    currency: "INR",
     city: document.getElementById("city") ? document.getElementById("city").value.trim() : "",
     vibe: document.getElementById("vibe") ? document.getElementById("vibe").value.trim() : "Modern",
     dietary: ["Vegetarian"],
@@ -218,7 +218,7 @@ async function onPlanSubmit(e) {
     // Update active plan banner
     const planSummary = document.getElementById("plan-summary-badge");
     if (planSummary) {
-      planSummary.textContent = `${plan.vibe} ${plan.event_type} • ${plan.guest_count} Guests • $${plan.total_budget.toLocaleString()}`;
+      planSummary.textContent = `${plan.vibe} ${plan.event_type} • ${plan.guest_count} Guests • ₹${plan.total_budget.toLocaleString("en-IN")}`;
     }
 
     activateTab("budget");
@@ -290,7 +290,7 @@ async function onSendChat(text) {
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
   const ctx = state.currentPlan
-    ? `${state.currentPlan.event_type} for ${state.currentPlan.guest_count} guests with $${state.currentPlan.total_budget} budget`
+    ? `${state.currentPlan.event_type} for ${state.currentPlan.guest_count} guests with ₹${state.currentPlan.total_budget.toLocaleString("en-IN")} budget`
     : "General event planning";
 
   try {

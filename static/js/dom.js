@@ -42,10 +42,10 @@ export function el(tag, attrs = {}, children = []) {
  * @param {string} currency 
  * @returns {string}
  */
-export function formatCurrency(amount, currency = "USD") {
-  return new Intl.NumberFormat("en-US", {
+export function formatCurrency(amount, currency = "INR") {
+  return new Intl.NumberFormat("en-IN", {
     style: "currency",
-    currency: currency || "USD",
+    currency: currency || "INR",
     maximumFractionDigits: 0,
   }).format(amount || 0);
 }

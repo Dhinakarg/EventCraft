@@ -11,6 +11,13 @@
   <!-- Inline SVG Icon Sprite (Zero External Dependencies, aria-hidden) -->
   <svg style="display: none;" aria-hidden="true">
     <defs>
+      <!-- Unique Brand Logo: EventCraft Celebration Marquee & Pavilion -->
+      <symbol id="icon-brand-logo" viewBox="0 0 24 24">
+        <path d="M2 9.5L12 3l10 6.5v1.5H2v-1.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 11v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M8 11c0 2.2 1.8 4 4 4s4-1.8 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="12" y1="15" x2="12" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </symbol>
       <!-- Sparkle / GenAI -->
       <symbol id="icon-sparkle" viewBox="0 0 24 24">
         <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
@@ -37,10 +44,11 @@
         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
       </symbol>
-      <!-- Budget / Dollar -->
+      <!-- Budget / Rupee (INR) -->
       <symbol id="icon-budget" viewBox="0 0 24 24">
-        <line x1="12" y1="1" x2="12" y2="23"/>
-        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        <line x1="6" y1="4" x2="18" y2="4"/>
+        <line x1="6" y1="9" x2="15" y2="9"/>
+        <path d="M6 4h6.5a4.5 4.5 0 0 1 0 9H6l7 7"/>
       </symbol>
       <!-- Timeline / Clock -->
       <symbol id="icon-timeline" viewBox="0 0 24 24">
@@ -145,7 +153,7 @@
     <div class="header-inner">
       <div class="brand-area">
         <h1 class="brand-title">
-          <svg class="icon icon-logo" aria-hidden="true"><use href="#icon-sparkle"></use></svg>
+          <svg class="icon icon-logo" aria-hidden="true"><use href="#icon-brand-logo"></use></svg>
           EventCraft AI
         </h1>
       </div>
@@ -188,7 +196,7 @@
               <svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
               <span>Plan Active</span>
             </div>
-            <div id="summary-text" class="summary-text">Wedding · 80 guests · $25,000 · Oct 15, 2026</div>
+            <div id="summary-text" class="summary-text">Wedding · 80 guests · ₹5,00,000 · Oct 15, 2026</div>
           </div>
           <button type="button" id="btn-edit-details" class="btn btn-sm btn-outline">
             <svg class="icon" aria-hidden="true"><use href="#icon-edit"></use></svg>
@@ -264,15 +272,15 @@
               </div>
 
               <div class="form-group">
-                <label for="total_budget">Total Budget ($)</label>
-                <input type="number" id="total_budget" name="total_budget" class="form-control" min="100" step="50" value="25000" required aria-required="true" aria-invalid="false" aria-describedby="error-budget">
+                <label for="total_budget">Total Budget (₹)</label>
+                <input type="number" id="total_budget" name="total_budget" class="form-control" min="1000" step="1000" value="500000" required aria-required="true" aria-invalid="false" aria-describedby="error-budget">
                 <p id="error-budget" class="input-error" role="alert" hidden>Budget must be greater than zero.</p>
               </div>
             </div>
 
             <!-- Live Per-Guest Calculation Preview -->
             <div id="per-guest-calc" class="per-guest-calc" aria-live="polite">
-              <span class="calc-label" id="per-guest-amount">= $312 per guest</span>
+              <span class="calc-label" id="per-guest-amount">= ₹6,250 per guest</span>
               <span class="calc-sub">est. spending allocation</span>
             </div>
           </fieldset>
@@ -454,15 +462,15 @@
           <div class="sample-scenarios-group" role="group" aria-label="Sample planning scenarios">
             <button type="button" class="btn btn-outline scenario-btn" data-scenario="tight-wedding">
               <span class="scenario-btn-title">Tight-Budget Wedding</span>
-              <span class="scenario-btn-meta">60 guests · $10,000 · Rustic Charm</span>
+              <span class="scenario-btn-meta">60 guests · ₹4,00,000 · Rustic Charm</span>
             </button>
             <button type="button" class="btn btn-outline scenario-btn" data-scenario="milestone-birthday">
               <span class="scenario-btn-title">Milestone 30th Birthday</span>
-              <span class="scenario-btn-meta">40 guests · $4,500 · Rooftop Lounge</span>
+              <span class="scenario-btn-meta">40 guests · ₹1,50,000 · Rooftop Lounge</span>
             </button>
             <button type="button" class="btn btn-outline scenario-btn" data-scenario="community-fest">
               <span class="scenario-btn-title">Community Arts Festival</span>
-              <span class="scenario-btn-meta">350 guests · $18,000 · Garden Party</span>
+              <span class="scenario-btn-meta">350 guests · ₹6,00,000 · Garden Party</span>
             </button>
           </div>
         </div>
@@ -493,17 +501,17 @@
           <div class="kpi-grid" id="kpi-grid" role="region" aria-label="Key event metrics">
             <div class="kpi-card" id="kpi-total-budget">
               <div class="kpi-label">Total Budget</div>
-              <div class="kpi-value" id="kpi-val-budget">$25,000</div>
-              <div class="kpi-sub" id="kpi-sub-budget">USD Currency</div>
+              <div class="kpi-value" id="kpi-val-budget">₹5,00,000</div>
+              <div class="kpi-sub" id="kpi-sub-budget">INR Currency</div>
             </div>
             <div class="kpi-card" id="kpi-per-guest">
               <div class="kpi-label">Per Guest Spend</div>
-              <div class="kpi-value" id="kpi-val-guest">$312</div>
+              <div class="kpi-value" id="kpi-val-guest">₹6,250</div>
               <div class="kpi-sub" id="kpi-sub-guest">80 guests planned</div>
             </div>
             <div class="kpi-card" id="kpi-contingency">
               <div class="kpi-label">Contingency Reserved</div>
-              <div class="kpi-value" id="kpi-val-contingency">$2,500</div>
+              <div class="kpi-value" id="kpi-val-contingency">₹50,000</div>
               <div class="kpi-sub" id="kpi-sub-contingency">10% buffer fund</div>
             </div>
             <div class="kpi-card" id="kpi-countdown">

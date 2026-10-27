@@ -29,15 +29,15 @@ function announceStatus(msg) {
 }
 
 /**
- * Format currency amount safely.
+ * Format currency amount safely using Indian Rupee (INR) / en-IN by default.
  * @param {number} amount 
  * @param {string} currency 
  * @returns {string}
  */
-function formatCurrency(amount, currency = "USD") {
-  return new Intl.NumberFormat("en-US", {
+function formatCurrency(amount, currency = "INR") {
+  return new Intl.NumberFormat("en-IN", {
     style: "currency",
-    currency: currency || "USD",
+    currency: currency || "INR",
     maximumFractionDigits: 0,
   }).format(amount || 0);
 }
@@ -122,7 +122,7 @@ function renderKpiCards(plan) {
   const budgetVal = document.getElementById("kpi-val-budget");
   const budgetSub = document.getElementById("kpi-sub-budget");
   if (budgetVal) budgetVal.textContent = formatCurrency(b.total_budget, b.currency);
-  if (budgetSub) budgetSub.textContent = `${b.currency || "USD"} Allocation`;
+  if (budgetSub) budgetSub.textContent = `${b.currency || "INR"} Allocation`;
 
   const guestVal = document.getElementById("kpi-val-guest");
   const guestSub = document.getElementById("kpi-sub-guest");
@@ -520,7 +520,7 @@ function renderVendorsTab(vendors, container) {
     const infoCol = createEl("div", {}, [
       createEl("div", { className: "vendor-category-title" }, [v.category]),
       createEl("div", { className: "vendor-cap-text" }, [
-        `Budget Cap: ${formatCurrency(v.budget_cap, state.currentPlan?.budget?.currency || "USD")}`,
+        `Budget Cap: ${formatCurrency(v.budget_cap, state.currentPlan?.budget?.currency || "INR")}`,
       ]),
     ]);
 
@@ -860,7 +860,7 @@ function updatePerGuestCalculation() {
 
   if (!isNaN(guests) && guests > 0 && !isNaN(budget) && budget > 0) {
     const perGuest = Math.round(budget / guests);
-    calcAmount.textContent = `= $${perGuest.toLocaleString()} per guest`;
+    calcAmount.textContent = `= ${formatCurrency(perGuest, "INR")} per guest`;
   } else {
     calcAmount.textContent = "= -- per guest";
   }
@@ -977,9 +977,9 @@ const SCENARIOS = {
     event_type: "wedding",
     event_date_offset_days: 180,
     guest_count: 60,
-    total_budget: 10000,
+    total_budget: 400000,
     vibe: "Rustic",
-    city: "Denver",
+    city: "Jaipur",
     priorities: ["venue", "food", "photography"],
     dietary: ["Vegetarian", "Gluten-free"],
     notes: "Daytime garden celebration with buffet dining, acoustic music, and natural lighting.",
@@ -988,9 +988,9 @@ const SCENARIOS = {
     event_type: "birthday",
     event_date_offset_days: 90,
     guest_count: 40,
-    total_budget: 4500,
+    total_budget: 150000,
     vibe: "Modern Minimalist",
-    city: "Austin",
+    city: "Bengaluru",
     priorities: ["food", "entertainment", "decor"],
     dietary: ["Nut allergy"],
     notes: "Rooftop lounge gathering with craft cocktails, finger foods, and DJ.",
@@ -999,9 +999,9 @@ const SCENARIOS = {
     event_type: "community",
     event_date_offset_days: 150,
     guest_count: 350,
-    total_budget: 18000,
+    total_budget: 600000,
     vibe: "Garden Party",
-    city: "Seattle",
+    city: "Mumbai",
     priorities: ["venue", "entertainment", "other"],
     dietary: ["Vegan", "Halal"],
     notes: "Outdoor park festival with community art booths, food trucks, and acoustic stages.",
@@ -1200,7 +1200,7 @@ async function onPlanSubmit(e) {
     event_date: document.getElementById("event_date").value,
     guest_count: parseInt(document.getElementById("guest_count").value, 10),
     total_budget: parseFloat(document.getElementById("total_budget").value),
-    currency: "USD",
+    currency: "INR",
     vibe: document.getElementById("vibe")?.value.trim() || "Modern",
     city: document.getElementById("city")?.value.trim() || "",
     priorities: priorities,

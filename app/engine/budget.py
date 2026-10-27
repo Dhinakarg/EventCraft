@@ -46,7 +46,9 @@ def _balance_penny_discrepancy(amounts: list[float], total_budget: float) -> lis
     return amounts
 
 
-def _check_feasibility(event_type: EventType, total_budget: float, guest_count: int) -> tuple[bool, list[str]]:
+def _check_feasibility(
+    event_type: EventType, total_budget: float, guest_count: int, currency: str = "INR"
+) -> tuple[bool, list[str]]:
     """Determine financial feasibility and offer concrete suggestions if underfunded."""
     per_guest = round(total_budget / max(guest_count, 1), 2)
     min_thresh = get_min_per_guest_threshold(event_type)
@@ -54,7 +56,7 @@ def _check_feasibility(event_type: EventType, total_budget: float, guest_count: 
         return True, ["Budget is healthy and realistic for the projected guest count."]
 
     suggestions = [
-        f"Budget alert: Per-guest cost (${per_guest:,.2f}) is below the recommended minimum (${min_thresh:,.2f}).",
+        f"Budget alert: Per-guest cost ({currency} {per_guest:,.2f}) is below the recommended minimum ({currency} {min_thresh:,.2f}).",
         "Suggestion: Reduce guest count to comfortably preserve dining and venue standards.",
         "Suggestion: Shorten event duration or select off-peak weekday/Sunday time slots.",
         "Suggestion: Adopt DIY floral and table decor to maximize hospitality and catering funds.",
@@ -86,7 +88,7 @@ def allocate_event_budget(req: EventRequest, contingency_rate: float = DEFAULT_C
             )
         )
 
-    is_feasible, notes = _check_feasibility(req.event_type, req.total_budget, req.guest_count)
+    is_feasible, notes = _check_feasibility(req.event_type, req.total_budget, req.guest_count, req.currency)
     return BudgetResponse(
         total_budget=round(req.total_budget, 2),
         per_guest_cost=round(req.total_budget / req.guest_count, 2),
