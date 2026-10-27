@@ -11,7 +11,7 @@ from app.ai.fallback import get_fallback_chat, get_fallback_ideas
 from app.ai.prompts import build_chat_prompt, build_ideas_prompt
 from app.ai.schemas import ChatRefineResponse, IdeasRequest, IdeasResponse
 from app.config import get_settings
-from app.constants import DEFAULT_CACHE_MAX_SIZE, DEFAULT_RETRY_ATTEMPTS
+from app.constants import DEFAULT_CACHE_MAX_SIZE, DEFAULT_RETRY_ATTEMPTS, DEFAULT_TIMEOUT_MS
 from app.sanitizer import sanitize_raw_text
 
 # In-memory thread-safe LRU cache for ideas and chat queries
@@ -51,7 +51,8 @@ def _get_client() -> genai.Client | None:
     settings = get_settings()
     if not settings.gemini_api_key or not settings.gemini_api_key.strip():
         return None
-    return genai.Client(api_key=settings.gemini_api_key.strip())
+    http_opts = types.HttpOptions(timeout=DEFAULT_TIMEOUT_MS)
+    return genai.Client(api_key=settings.gemini_api_key.strip(), http_options=http_opts)
 
 
 def _call_gemini_ideas_with_retry(client: genai.Client, prompt: str) -> IdeasResponse:

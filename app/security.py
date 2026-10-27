@@ -43,12 +43,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):  # pylint: disable=too-few-
         client_ip = request.client.host if request.client else "unknown"
 
         # Apply rate limiting to API routes
-        if request.url.path.startswith("/api/"):
-            if not check_rate_limit(client_ip, settings.rate_limit_per_min):
-                return JSONResponse(
-                    status_code=429,
-                    content={"detail": "Rate limit exceeded. Please try again later."},
-                )
+        if request.url.path.startswith("/api/") and not check_rate_limit(client_ip, settings.rate_limit_per_min):
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Rate limit exceeded. Please try again later."},
+            )
 
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
@@ -65,7 +64,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):  # pylint: disable=too-few-
 
 
 async def generic_exception_handler(_request: Request, _exc: Exception) -> JSONResponse:
-    """Generic error handler that never leaks stack traces, secrets, or internal details."""
+    """Handle uncaught exceptions and mask internal traces in responses."""
     return JSONResponse(
         status_code=500,
         content={"detail": "An internal server error occurred. Please try again later."},

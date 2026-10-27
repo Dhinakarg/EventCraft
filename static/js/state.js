@@ -1,9 +1,12 @@
 /**
  * EventCraft AI - Shared Application State & Scenarios
+ * Single source of truth for all mutable client state.
  */
 
+/** @type {import("./types.js").AppState} */
 export const state = {
   currentPlan: null,
+  timelineCriticalOnly: false,
   chatMessages: [
     {
       role: "bot",

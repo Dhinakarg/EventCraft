@@ -61,7 +61,7 @@ export async function onChatSubmit(e) {
     const data = await res.json();
     appendChatMessage("bot", data.reply);
     announceStatus(`Planner replied: ${data.reply}`);
-  } catch (err) {
+  } catch {
     appendChatMessage("bot", "I am having trouble answering right now. Please try again.");
   } finally {
     input.disabled = false;

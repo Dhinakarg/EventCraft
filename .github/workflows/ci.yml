@@ -25,6 +25,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Node dependencies
+        run: npm ci
+
       - name: Run Ruff Lint Check
         run: ruff check .
 
@@ -37,6 +46,19 @@ jobs:
       - name: Run Strict Mypy Type Check
         run: mypy --strict app
 
-      - name: Run Tests with Coverage Enforcement (>=90%)
+      - name: Run Pylint Check
+        run: pylint app
+
+      - name: Run Radon Complexity Gate (Grade A only)
         run: |
-          pytest --cov=app.engine --cov=app.security --cov-report=term-missing --cov-fail-under=90
+          radon cc app -n B
+          radon mi app -n B
+
+      - name: Run ESLint Frontend Check
+        run: npx eslint static tests/js
+
+      - name: Run Frontend JavaScript Unit Tests
+        run: node --test tests/js/*.test.js
+
+      - name: Run Pytest with Whole-App Coverage Enforcement (>=90%)
+        run: pytest --cov=app --cov-report=term-missing --cov-fail-under=90

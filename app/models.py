@@ -1,7 +1,7 @@
 """Pydantic v2 domain models for EventCraft AI planning requests and responses."""
 
 from datetime import date
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -18,7 +18,7 @@ from app.sanitizer import sanitize_raw_text
 VALID_PRIORITIES = {"venue", "food", "decor", "photography", "entertainment", "other"}
 
 
-class EventType(str, Enum):
+class EventType(StrEnum):
     """Supported event categories."""
 
     WEDDING = "wedding"
@@ -26,7 +26,7 @@ class EventType(str, Enum):
     COMMUNITY = "community"
 
 
-class PriorityEnum(str, Enum):
+class PriorityEnum(StrEnum):
     """Allowed planning priority categories."""
 
     VENUE = "venue"

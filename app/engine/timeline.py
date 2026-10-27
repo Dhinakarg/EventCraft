@@ -1,69 +1,16 @@
 """Pure deterministic backward-scheduled timeline engine with compression."""
 
 from datetime import date, timedelta
-from typing import NamedTuple
 
+from app.engine.data.task_templates import TASK_TEMPLATES_BY_EVENT_TYPE, TaskTemplate
 from app.engine.profiles import get_standard_lead_time
 from app.models import EventRequest, EventType, TimelineResponse, TimelineTask
 
 
-class TaskTemplate(NamedTuple):
-    """Milestone task template for backward scheduling."""
-
-    id: str
-    title: str
-    phase: str
-    days_before_event: int
-    is_critical: bool
-
-
-def _get_wedding_task_templates() -> list[TaskTemplate]:
-    """Return wedding tasks (id, title, phase, std_days_before, is_critical)."""
-    return [
-        TaskTemplate("w1", "Tour and lock ceremony & reception venue", "Vision & Venue", 270, True),
-        TaskTemplate("w2", "Interview and contract caterer and bar", "Vendor Sourcing", 210, True),
-        TaskTemplate("w3", "Book lead photographer and videographer", "Vendor Sourcing", 180, True),
-        TaskTemplate("w4", "Finalize floral designer and color palette", "Design & Decor", 120, False),
-        TaskTemplate("w5", "Mail invitations and open digital RSVP portal", "Guest Logistics", 90, True),
-        TaskTemplate("w6", "Order custom favors and personalized signage", "Design & Decor", 45, False),
-        TaskTemplate("w7", "Submit final headcount to caterer and venue", "Final Countdown", 21, True),
-        TaskTemplate("w8", "Conduct wedding rehearsal and distribute day run-of-show", "Event Week", 3, True),
-    ]
-
-
-def _get_birthday_task_templates() -> list[TaskTemplate]:
-    """Return birthday tasks (id, title, phase, std_days_before, is_critical)."""
-    return [
-        TaskTemplate("b1", "Reserve private lounge, hall or dining venue", "Initial Setup", 60, True),
-        TaskTemplate("b2", "Order custom birthday cake and select menu", "Food & Beverage", 40, True),
-        TaskTemplate("b3", "Book DJ, performer or entertainment package", "Entertainment", 30, True),
-        TaskTemplate("b4", "Distribute digital invitations and gather RSVPs", "Invitations", 25, True),
-        TaskTemplate("b5", "Order customized balloon arches and backdrop decor", "Decor", 14, False),
-        TaskTemplate("b6", "Assemble party favor bags and game props", "Preparation", 7, False),
-        TaskTemplate("b7", "Confirm cake pickup and venue arrival time", "Event Day Prep", 2, True),
-    ]
-
-
-def _get_community_task_templates() -> list[TaskTemplate]:
-    """Return community tasks (id, title, phase, std_days_before, is_critical)."""
-    return [
-        TaskTemplate("c1", "File municipal sound, park, and road permits", "Permits & Safety", 90, True),
-        TaskTemplate("c2", "Secure local sponsors and confirm event grants", "Budget & Sponsors", 75, True),
-        TaskTemplate("c3", "Reserve sound staging, generators, and restrooms", "Logistics", 60, True),
-        TaskTemplate("c4", "Recruit and assign volunteer zone leaders", "Staffing", 35, True),
-        TaskTemplate("c5", "Distribute flyers and publicize on neighborhood boards", "Outreach", 21, False),
-        TaskTemplate("c6", "Conduct safety walkthrough and emergency briefing", "Safety & Prep", 7, True),
-        TaskTemplate("c7", "Set up first-aid tent and registration tables", "Site Staging", 1, True),
-    ]
-
-
 def _get_task_templates(event_type: EventType) -> list[TaskTemplate]:
     """Dispatch task templates for event type."""
-    if event_type == EventType.WEDDING:
-        return _get_wedding_task_templates()
-    if event_type == EventType.BIRTHDAY:
-        return _get_birthday_task_templates()
-    return _get_community_task_templates()
+    templates = TASK_TEMPLATES_BY_EVENT_TYPE.get(event_type, TASK_TEMPLATES_BY_EVENT_TYPE[EventType.WEDDING])
+    return list(templates)
 
 
 def _build_timeline_task(

@@ -30,24 +30,37 @@ class BudgetBuildResult(NamedTuple):
     contingency_fund: float
 
 
+def _compute_raw_weight(item: ProfileCategory, priorities: set[str]) -> float:
+    """Calculate boosted or standard weight for a single profile item."""
+    if item.priority_key in priorities:
+        return item.standard_percentage * PRIORITY_BOOST_MULTIPLIER
+    return item.standard_percentage
+
+
+def _normalize_non_contingency(
+    profile: list[ProfileCategory],
+    priorities_set: set[str],
+    target_sum: float,
+) -> dict[str, float]:
+    """Calculate and normalize non-contingency category weights."""
+    raw_weights = {
+        item.category: _compute_raw_weight(item, priorities_set)
+        for item in profile
+        if item.priority_key != "contingency"
+    }
+    raw_sum = sum(raw_weights.values()) or 1.0
+    return {cat: (val / raw_sum) * target_sum for cat, val in raw_weights.items()}
+
+
 def _calculate_shifted_weights(
     profile: list[ProfileCategory],
     priorities: list[str],
     contingency_rate: float,
 ) -> dict[str, float]:
     """Shift category weights based on user priorities and renormalize to 100%."""
-    non_contingency = [item for item in profile if item.priority_key != "contingency"]
-    target_non_contingency_sum = 100.0 - contingency_rate
-
-    raw_weights: dict[str, float] = {}
-    for item in non_contingency:
-        multiplier = PRIORITY_BOOST_MULTIPLIER if item.priority_key in priorities else 1.0
-        raw_weights[item.category] = item.standard_percentage * multiplier
-
-    raw_sum = sum(raw_weights.values())
-    normalized: dict[str, float] = {}
-    for cat, val in raw_weights.items():
-        normalized[cat] = (val / raw_sum) * target_non_contingency_sum
+    priorities_set = set(priorities)
+    target_sum = 100.0 - contingency_rate
+    normalized = _normalize_non_contingency(profile, priorities_set, target_sum)
 
     for item in profile:
         if item.priority_key == "contingency":

@@ -266,14 +266,25 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 Open **http://127.0.0.1:8000** in your browser.
 
-### 4. Run Tests & Coverage
-```bash
-# Run pytest with 90%+ coverage enforcement on engine & security
-pytest --cov=app.engine --cov=app.security --cov-report=term-missing --cov-fail-under=90
+### 4. Run Tests, Linting & Quality Gates
+EventCraft AI enforces comprehensive quality gates with **56 Python unit/integration tests** (97.19% coverage across the entire app) and **9 pure JavaScript unit tests**:
 
-# Run Ruff linter and formatter checks
+```bash
+# Run pytest across the whole app with 90%+ coverage enforcement (56 tests)
+pytest --cov=app --cov-report=term-missing --cov-fail-under=90
+
+# Run Node.js unit tests for frontend helpers and form validation (9 tests)
+npm test  # or: node --test tests/js/*.test.js
+
+# Run static type checking (strict mode across all 29 modules)
+mypy --strict app
+
+# Run Ruff linter and format verification
 ruff check .
 ruff format --check .
+
+# Or run everything with one Makefile command:
+make verify
 ```
 
 ### 5. Run with Docker

@@ -3,9 +3,8 @@
  * Backward-scheduled milestone timeline grouped by phase with critical filter toggle.
  */
 
+import { state } from "./state.js";
 import { announceStatus, createEl, createSvgIcon, formatFriendlyDate } from "./utils.js";
-
-let timelineCriticalOnly = false;
 
 /**
  * Render Vertical Timeline grouped by phase with friendly dates and critical filter toggle.
@@ -16,27 +15,29 @@ export function renderTimelineTab(timeline, container) {
   if (!container || !timeline) return;
   container.replaceChildren();
 
+  const isCriticalOnly = Boolean(state.timelineCriticalOnly);
+
   // Filter toolbar
   const controls = createEl("div", { className: "timeline-controls" });
   const filterBtn = createEl("button", {
     type: "button",
     id: "timeline-filter-critical",
-    className: `btn btn-sm ${timelineCriticalOnly ? "btn-primary" : "btn-outline"}`,
-    aria: { pressed: timelineCriticalOnly ? "true" : "false" },
+    className: `btn btn-sm ${isCriticalOnly ? "btn-primary" : "btn-outline"}`,
+    aria: { pressed: isCriticalOnly ? "true" : "false" },
   }, [
     createSvgIcon("filter"),
-    timelineCriticalOnly ? " Showing critical only" : " Show only critical",
+    isCriticalOnly ? " Showing critical only" : " Show only critical",
   ]);
 
   filterBtn.addEventListener("click", () => {
-    timelineCriticalOnly = !timelineCriticalOnly;
+    state.timelineCriticalOnly = !state.timelineCriticalOnly;
     renderTimelineTab(timeline, container);
-    announceStatus(timelineCriticalOnly ? "Filtered to show only critical tasks." : "Showing all timeline tasks.");
+    announceStatus(state.timelineCriticalOnly ? "Filtered to show only critical tasks." : "Showing all timeline tasks.");
   });
   controls.appendChild(filterBtn);
 
   const allTasks = timeline.tasks || [];
-  const filteredTasks = timelineCriticalOnly
+  const filteredTasks = isCriticalOnly
     ? allTasks.filter((t) => t.is_critical || (t.priority && t.priority.toLowerCase() === "critical"))
     : allTasks;
 

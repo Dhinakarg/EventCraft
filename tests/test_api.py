@@ -1,6 +1,7 @@
 """API integration tests covering valid plan, 422 errors, rate limit 429, headers, and secret leakage."""
 
 from datetime import date, timedelta
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -32,7 +33,8 @@ def test_valid_plan_endpoint() -> None:
         "city": "Napa",
         "priorities": ["venue", "food"],
     }
-    response = client.post("/api/plan", json=payload)
+    with patch("app.ai.gemini_client._get_client", return_value=None):
+        response = client.post("/api/plan", json=payload)
     assert response.status_code == 200
     data = response.json()
     assert data["event_type"] == "wedding"
@@ -80,18 +82,17 @@ def test_security_headers_present() -> None:
 def test_rate_limit_returns_429() -> None:
     """Verify exceeding per-IP rate limit triggers HTTP 429."""
     clear_rate_limits()
-    settings = get_settings()
-    limit = settings.rate_limit_per_min
+    with patch("app.security.get_settings") as mock_settings:
+        mock_settings.return_value.rate_limit_per_min = 5
+        # Fire requests up to the limit
+        for _ in range(5):
+            res = client.post("/api/chat", json={"plan_context": "test", "question": "budget tip"})
+            assert res.status_code == 200
 
-    # Fire requests up to the limit
-    for _ in range(limit):
-        res = client.post("/api/chat", json={"plan_context": "test", "question": "budget tip"})
-        assert res.status_code == 200
-
-    # Next request must return 429
-    res_exceeded = client.post("/api/chat", json={"plan_context": "test", "question": "budget tip"})
-    assert res_exceeded.status_code == 429
-    assert "rate limit" in res_exceeded.json()["detail"].lower()
+        # Next request must return 429
+        res_exceeded = client.post("/api/chat", json={"plan_context": "test", "question": "budget tip"})
+        assert res_exceeded.status_code == 429
+        assert "rate limit" in res_exceeded.json()["detail"].lower()
     clear_rate_limits()
 
 
@@ -99,15 +100,16 @@ def test_no_secrets_in_responses() -> None:
     """Verify responses never leak API keys, system tokens, or internal env vars."""
     clear_rate_limits()
     target_date = (date.today() + timedelta(days=150)).isoformat()
-    response = client.post(
-        "/api/plan",
-        json={
-            "event_type": "birthday",
-            "event_date": target_date,
-            "guest_count": 30,
-            "total_budget": 3000.0,
-        },
-    )
+    with patch("app.ai.gemini_client._get_client", return_value=None):
+        response = client.post(
+            "/api/plan",
+            json={
+                "event_type": "birthday",
+                "event_date": target_date,
+                "guest_count": 30,
+                "total_budget": 3000.0,
+            },
+        )
     body_text = response.text
     header_text = str(response.headers)
     settings = get_settings()
