@@ -8,6 +8,117 @@
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
+  <!-- Inline SVG Icon Sprite (Zero External Dependencies, aria-hidden) -->
+  <svg style="display: none;" aria-hidden="true">
+    <defs>
+      <!-- Sparkle / GenAI -->
+      <symbol id="icon-sparkle" viewBox="0 0 24 24">
+        <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
+      </symbol>
+      <!-- Theme / Sun-Moon -->
+      <symbol id="icon-theme" viewBox="0 0 24 24">
+        <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>
+      </symbol>
+      <!-- Calendar -->
+      <symbol id="icon-calendar" viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </symbol>
+      <!-- Print -->
+      <symbol id="icon-print" viewBox="0 0 24 24">
+        <polyline points="6 9 6 2 18 2 18 9"/>
+        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+        <rect x="6" y="14" width="12" height="8"/>
+      </symbol>
+      <!-- Copy -->
+      <symbol id="icon-copy" viewBox="0 0 24 24">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+      </symbol>
+      <!-- Budget / Dollar -->
+      <symbol id="icon-budget" viewBox="0 0 24 24">
+        <line x1="12" y1="1" x2="12" y2="23"/>
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+      </symbol>
+      <!-- Timeline / Clock -->
+      <symbol id="icon-timeline" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
+      </symbol>
+      <!-- Vendors / Handshake -->
+      <symbol id="icon-vendors" viewBox="0 0 24 24">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </symbol>
+      <!-- Chat / Message -->
+      <symbol id="icon-chat" viewBox="0 0 24 24">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </symbol>
+      <!-- Lightning Bolt -->
+      <symbol id="icon-bolt" viewBox="0 0 24 24">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </symbol>
+      <!-- Warning -->
+      <symbol id="icon-warning" viewBox="0 0 24 24">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </symbol>
+      <!-- Check -->
+      <symbol id="icon-check" viewBox="0 0 24 24">
+        <polyline points="20 6 9 17 4 12"/>
+      </symbol>
+      <!-- Edit / Pencil -->
+      <symbol id="icon-edit" viewBox="0 0 24 24">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </symbol>
+      <!-- Chart -->
+      <symbol id="icon-chart" viewBox="0 0 24 24">
+        <line x1="18" y1="20" x2="18" y2="10"/>
+        <line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6" y1="20" x2="6" y2="14"/>
+      </symbol>
+      <!-- Palette -->
+      <symbol id="icon-palette" viewBox="0 0 24 24">
+        <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+        <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+        <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+        <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z"/>
+      </symbol>
+      <!-- Utensils -->
+      <symbol id="icon-utensils" viewBox="0 0 24 24">
+        <path d="M18 2v20"/>
+        <path d="M21 15a3 3 0 0 1-3 3h-2"/>
+        <path d="M2 2v6a4 4 0 0 0 4 4v10"/>
+        <path d="M6 2v6"/>
+        <path d="M10 2v6a4 4 0 0 1-4 4"/>
+      </symbol>
+      <!-- Activities / Game -->
+      <symbol id="icon-activities" viewBox="0 0 24 24">
+        <rect x="2" y="6" width="20" height="12" rx="2"/>
+        <line x1="6" y1="12" x2="10" y2="12"/>
+        <line x1="8" y1="10" x2="8" y2="14"/>
+        <line x1="15" y1="13" x2="15.01" y2="13"/>
+        <line x1="18" y1="11" x2="18.01" y2="11"/>
+      </symbol>
+      <!-- Decor / Flower -->
+      <symbol id="icon-decor" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 16.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 1 1-4.5 4.5"/>
+      </symbol>
+      <!-- Spinner -->
+      <symbol id="icon-spinner" viewBox="0 0 24 24">
+        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+      </symbol>
+    </defs>
+  </svg>
+
   <!-- Accessible Skip Navigation Link -->
   <a href="#main-content" class="skip-link">Skip to main content</a>
 
@@ -18,18 +129,31 @@
   <header class="site-header" role="banner">
     <div class="header-inner">
       <div class="brand-area">
-        <h1 class="brand-title">EventCraft AI</h1>
+        <h1 class="brand-title">
+          <svg class="icon icon-logo" aria-hidden="true"><use href="#icon-sparkle"></use></svg>
+          EventCraft AI
+        </h1>
       </div>
+
       <div class="controls-cluster" role="region" aria-label="Accessibility and display settings">
-        <label for="font-size-select" style="font-size: 0.85rem; margin-bottom: 0;">Text Size:</label>
-        <select id="font-size-select" class="btn btn-sm" aria-label="Select text display size">
+        <!-- 3-Button Text Size Control Group -->
+        <div class="font-size-cluster" role="group" aria-label="Text display size">
+          <span class="control-label" id="font-size-label">Size:</span>
+          <button type="button" class="btn btn-sm btn-size active" id="btn-size-normal" data-size="normal" aria-pressed="true" aria-label="Default text size">A</button>
+          <button type="button" class="btn btn-sm btn-size" id="btn-size-large" data-size="large" aria-pressed="false" aria-label="Large text size">A+</button>
+          <button type="button" class="btn btn-sm btn-size" id="btn-size-xl" data-size="xl" aria-pressed="false" aria-label="Extra large text size">A++</button>
+        </div>
+        <!-- Hidden select element for full backward compatibility -->
+        <select id="font-size-select" style="display: none;" aria-hidden="true" tabindex="-1">
           <option value="normal">Default</option>
-          <option value="large">Large (+2px)</option>
-          <option value="xl">Extra Large (+4px)</option>
+          <option value="large">Large</option>
+          <option value="xl">Extra Large</option>
         </select>
 
-        <button type="button" id="theme-btn" class="btn btn-sm" aria-label="Toggle dark and light visual mode">
-          🌓 Theme
+        <!-- Theme Toggle with aria-pressed and text label -->
+        <button type="button" id="theme-btn" class="btn btn-sm theme-toggle-btn" aria-pressed="false" aria-label="Toggle visual theme">
+          <svg class="icon" aria-hidden="true"><use href="#icon-theme"></use></svg>
+          <span class="theme-label" id="theme-text">Dark Mode</span>
         </button>
       </div>
     </div>
@@ -38,9 +162,25 @@
   <!-- Main Landmark -->
   <main id="main-content" class="main-wrapper" role="main" tabindex="-1">
     <div class="planner-layout">
-      <!-- Event Parameters Form Panel -->
+      <!-- Event Parameters Form Panel (Desktop: Sticky max 420px; Mobile: Collapses post-generation) -->
       <section class="form-panel" aria-labelledby="form-heading">
         <h2 id="form-heading" style="font-size: 1.25rem; margin-bottom: 16px;">Plan Your Event</h2>
+
+        <!-- Tablet/Mobile Summary Bar (collapses on plan generation) -->
+        <div id="form-summary-bar" class="form-summary-bar" hidden>
+          <div class="summary-content">
+            <div class="summary-badge">
+              <svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg>
+              <span>Plan Active</span>
+            </div>
+            <div id="summary-text" class="summary-text">Wedding · 80 guests · $25,000 · Oct 15, 2026</div>
+          </div>
+          <button type="button" id="btn-edit-details" class="btn btn-sm btn-outline">
+            <svg class="icon" aria-hidden="true"><use href="#icon-edit"></use></svg>
+            <span>Edit details</span>
+          </button>
+        </div>
+
         <form id="event-plan-form" novalidate>
           <!-- Fieldset 1: Event Essentials -->
           <fieldset>
@@ -48,9 +188,9 @@
             <div class="form-group">
               <label for="event_type">Event Category</label>
               <select id="event_type" name="event_type" class="form-control" required aria-describedby="type-desc">
-                <option value="wedding">💍 Wedding</option>
-                <option value="birthday">🎂 Birthday Party</option>
-                <option value="community">🎪 Community Festival</option>
+                <option value="wedding">Wedding</option>
+                <option value="birthday">Birthday Party</option>
+                <option value="community">Community Festival</option>
               </select>
               <p id="type-desc" class="input-desc hint">Determines budget allocation and standard lead times.</p>
             </div>
@@ -114,8 +254,9 @@
             </div>
           </fieldset>
 
-          <button type="submit" id="btn-submit-plan" class="btn btn-primary" style="width: 100%;">
-            ⚡ Generate Plan
+          <button type="submit" id="btn-submit-plan" class="btn btn-primary btn-block">
+            <svg class="icon" aria-hidden="true"><use href="#icon-bolt"></use></svg>
+            <span>Generate Plan</span>
           </button>
         </form>
       </section>
@@ -125,9 +266,18 @@
         <div class="actions-bar">
           <h2 id="results-heading" style="font-size: 1.25rem;">Event Master Plan</h2>
           <div class="controls-cluster" role="group" aria-label="Export and sharing options">
-            <button type="button" id="btn-export-ics" class="btn btn-sm">📅 Download .ics</button>
-            <button type="button" id="btn-print-plan" class="btn btn-sm">🖨️ Print / Save PDF</button>
-            <button type="button" id="btn-copy-text" class="btn btn-sm">📋 Copy as text</button>
+            <button type="button" id="btn-export-ics" class="btn btn-sm">
+              <svg class="icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+              <span>Download .ics</span>
+            </button>
+            <button type="button" id="btn-print-plan" class="btn btn-sm">
+              <svg class="icon" aria-hidden="true"><use href="#icon-print"></use></svg>
+              <span>Print / Save PDF</span>
+            </button>
+            <button type="button" id="btn-copy-text" class="btn btn-sm">
+              <svg class="icon" aria-hidden="true"><use href="#icon-copy"></use></svg>
+              <span>Copy as text</span>
+            </button>
           </div>
         </div>
 
@@ -137,19 +287,24 @@
         <!-- Tab Navigation (Proper ARIA Tabs Pattern) -->
         <div class="tabs-list" role="tablist" aria-label="Plan details tabs">
           <button type="button" class="tab-btn" role="tab" id="tab-budget" aria-selected="true" aria-controls="panel-budget" data-tab="budget" tabindex="0">
-            💰 Budget
+            <svg class="icon" aria-hidden="true"><use href="#icon-budget"></use></svg>
+            <span>Budget</span>
           </button>
           <button type="button" class="tab-btn" role="tab" id="tab-timeline" aria-selected="false" aria-controls="panel-timeline" data-tab="timeline" tabindex="-1">
-            ⏱️ Timeline
+            <svg class="icon" aria-hidden="true"><use href="#icon-timeline"></use></svg>
+            <span>Timeline</span>
           </button>
           <button type="button" class="tab-btn" role="tab" id="tab-vendors" aria-selected="false" aria-controls="panel-vendors" data-tab="vendors" tabindex="-1">
-            🤝 Vendor Checklist
+            <svg class="icon" aria-hidden="true"><use href="#icon-vendors"></use></svg>
+            <span>Vendor Checklist</span>
           </button>
           <button type="button" class="tab-btn" role="tab" id="tab-ideas" aria-selected="false" aria-controls="panel-ideas" data-tab="ideas" tabindex="-1">
-            ✨ Creative Ideas
+            <svg class="icon" aria-hidden="true"><use href="#icon-sparkle"></use></svg>
+            <span>Creative Ideas</span>
           </button>
           <button type="button" class="tab-btn" role="tab" id="tab-chat" aria-selected="false" aria-controls="panel-chat" data-tab="chat" tabindex="-1">
-            💬 Ask the Planner
+            <svg class="icon" aria-hidden="true"><use href="#icon-chat"></use></svg>
+            <span>Ask the Planner</span>
           </button>
         </div>
 
@@ -188,7 +343,10 @@
             <form id="chat-query-form" style="display: flex; gap: 8px;">
               <label for="chat-input" class="sr-status">Ask the planner a question</label>
               <input type="text" id="chat-input" class="form-control" maxlength="300" placeholder="Ask about timeline buffers, vendor vetting, or catering..." required>
-              <button type="submit" class="btn btn-primary btn-sm">Send</button>
+              <button type="submit" class="btn btn-primary btn-sm">
+                <svg class="icon" aria-hidden="true"><use href="#icon-chat"></use></svg>
+                <span>Send</span>
+              </button>
             </form>
           </div>
         </div>

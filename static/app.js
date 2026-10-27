@@ -43,10 +43,26 @@ function formatCurrency(amount, currency = "USD") {
 }
 
 /**
+ * Create inline SVG referencing the symbol sprite (aria-hidden by default).
+ * @param {string} name 
+ * @param {string} extraClass 
+ * @returns {SVGElement}
+ */
+function createSvgIcon(name, extraClass = "") {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", `icon ${extraClass}`.trim());
+  svg.setAttribute("aria-hidden", "true");
+  const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+  use.setAttribute("href", `#icon-${name}`);
+  svg.appendChild(use);
+  return svg;
+}
+
+/**
  * Create DOM element safely with textContent or children.
  * @param {string} tag 
  * @param {Object} attrs 
- * @param {Array<HTMLElement|string>} children 
+ * @param {Array<Element|string|number>} children 
  * @returns {HTMLElement}
  */
 function createEl(tag, attrs = {}, children = []) {
@@ -70,7 +86,7 @@ function createEl(tag, attrs = {}, children = []) {
   for (const child of children) {
     if (typeof child === "string" || typeof child === "number") {
       elem.appendChild(document.createTextNode(String(child)));
-    } else if (child instanceof HTMLElement) {
+    } else if (child instanceof Element) {
       elem.appendChild(child);
     }
   }
@@ -87,7 +103,11 @@ function renderWarnings(warnings, container) {
   if (!warnings || warnings.length === 0) return;
 
   const box = createEl("div", { className: "alert-box", role: "alert" });
-  box.appendChild(createEl("div", { className: "alert-title" }, ["⚠️ Planning Alerts & Recommendations:"]));
+  const title = createEl("div", { className: "alert-title" }, [
+    createSvgIcon("warning"),
+    " Planning Alerts & Recommendations:",
+  ]);
+  box.appendChild(title);
   const ul = createEl("ul", { style: "padding-left: 20px;" });
   for (const w of warnings) {
     ul.appendChild(createEl("li", {}, [w]));
@@ -106,15 +126,15 @@ function renderBudgetTab(budget, container) {
 
   // Metrics summary
   const summaryBox = createEl("div", { style: "display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;" }, [
-    createEl("div", { className: "alert-box", style: "flex: 1; min-width: 180px; margin-bottom: 0; background: var(--bg-surface-alt); color: var(--text-main);" }, [
+    createEl("div", { className: "alert-box", style: "flex: 1; min-width: 180px; margin-bottom: 0; background: var(--surface-2); color: var(--text);" }, [
       createEl("div", { style: "font-size: 0.85rem; color: var(--text-muted);" }, ["Total Budget"]),
       createEl("div", { style: "font-size: 1.3rem; font-weight: 800;" }, [formatCurrency(budget.total_budget, budget.currency)]),
     ]),
-    createEl("div", { className: "alert-box", style: "flex: 1; min-width: 180px; margin-bottom: 0; background: var(--bg-surface-alt); color: var(--text-main);" }, [
+    createEl("div", { className: "alert-box", style: "flex: 1; min-width: 180px; margin-bottom: 0; background: var(--surface-2); color: var(--text);" }, [
       createEl("div", { style: "font-size: 0.85rem; color: var(--text-muted);" }, ["Per Guest Spend"]),
       createEl("div", { style: "font-size: 1.3rem; font-weight: 800;" }, [formatCurrency(budget.per_guest_cost, budget.currency)]),
     ]),
-    createEl("div", { className: "alert-box", style: "flex: 1; min-width: 180px; margin-bottom: 0; background: var(--bg-surface-alt); color: var(--text-main);" }, [
+    createEl("div", { className: "alert-box", style: "flex: 1; min-width: 180px; margin-bottom: 0; background: var(--surface-2); color: var(--text);" }, [
       createEl("div", { style: "font-size: 0.85rem; color: var(--text-muted);" }, [`Contingency Buffer (${budget.contingency_percentage}%)`]),
       createEl("div", { style: "font-size: 1.3rem; font-weight: 800;" }, [formatCurrency(budget.contingency_fund, budget.currency)]),
     ]),
@@ -156,8 +176,9 @@ function renderBudgetTab(budget, container) {
   container.appendChild(tableWrapper);
 
   // Accessible Bar Chart (with text values, not relying on color alone)
-  const chartHeading = createEl("h3", { style: "font-size: 1.1rem; margin-top: 24px; margin-bottom: 12px;" }, [
-    "📊 Category Allocation Chart (with text values)",
+  const chartHeading = createEl("h3", { className: "section-subtitle" }, [
+    createSvgIcon("chart"),
+    " Category Allocation Breakdown",
   ]);
   const chartWrapper = createEl("div", { className: "chart-wrapper", role: "region", aria: { label: "Visual allocation bar chart" } });
 
@@ -192,15 +213,19 @@ function renderTimelineTab(timeline, container) {
   container.replaceChildren();
 
   if (timeline.rush_warning) {
-    const rushAlert = createEl("div", { className: "alert-box", style: "border-left: 4px solid var(--danger);", role: "alert" }, [
-      createEl("div", { className: "alert-title" }, ["🚨 Rush Timeline Notice"]),
+    const rushAlert = createEl("div", { className: "alert-box alert-danger", role: "alert" }, [
+      createEl("div", { className: "alert-title" }, [
+        createSvgIcon("warning"),
+        " Rush Timeline Notice",
+      ]),
       createEl("p", {}, [timeline.rush_warning]),
     ]);
     container.appendChild(rushAlert);
   }
 
-  const h = createEl("h3", { style: "font-size: 1.1rem; margin-bottom: 16px;" }, [
-    `📅 Scheduled Tasks (${timeline.lead_time_days} Days Lead Time)`,
+  const h = createEl("h3", { className: "section-subtitle" }, [
+    createSvgIcon("timeline"),
+    ` Scheduled Tasks (${timeline.lead_time_days} Days Lead Time)`,
   ]);
   container.appendChild(h);
 
@@ -213,7 +238,7 @@ function renderTimelineTab(timeline, container) {
       createEl("div", { className: "timeline-title" }, [task.title]),
       createEl("span", {
         className: "badge",
-        style: task.is_critical ? "background: var(--warning-bg); color: var(--warning-text);" : "background: var(--bg-surface-alt);",
+        style: task.is_critical ? "background: var(--warning-bg); color: var(--warning);" : "background: var(--surface-2);",
       }, [task.priority]),
     ]);
     list.appendChild(item);
@@ -229,7 +254,6 @@ function renderTimelineTab(timeline, container) {
 function renderVendorsTab(vendors, container) {
   container.replaceChildren();
 
-  // Load saved checklist states from localStorage
   const storageKey = `eventcraft_vendors_${state.currentPlan ? state.currentPlan.event_date : "default"}`;
   let savedStates = {};
   try {
@@ -240,7 +264,7 @@ function renderVendorsTab(vendors, container) {
 
   const progressHeader = createEl("div", {
     className: "alert-box",
-    style: "background: var(--bg-surface-alt); color: var(--text-main); margin-bottom: 20px;",
+    style: "background: var(--surface-2); color: var(--text); margin-bottom: 20px;",
   });
   const updateProgress = () => {
     const total = vendors.length;
@@ -249,7 +273,10 @@ function renderVendorsTab(vendors, container) {
       if (savedStates[v.category]) completed++;
     }
     progressHeader.replaceChildren(
-      createEl("div", { style: "font-weight: 700;" }, [`Vendor Checklist Progress: ${completed} of ${total} Booked`])
+      createEl("div", { style: "font-weight: 700; display: flex; align-items: center; gap: 8px;" }, [
+        createSvgIcon("check"),
+        `Vendor Checklist Progress: ${completed} of ${total} Booked`,
+      ])
     );
   };
   updateProgress();
@@ -298,7 +325,7 @@ function renderVendorsTab(vendors, container) {
 }
 
 /**
- * Render Creative Ideas with AI vs Template badge.
+ * Render Creative Ideas with AI vs Template badge and SVG icons.
  * @param {Object} ideas 
  * @param {HTMLElement} container 
  */
@@ -312,12 +339,18 @@ function renderIdeasTab(ideas, container) {
   const isAi = ideas.source === "ai";
   const badge = createEl("span", {
     className: `badge ${isAi ? "badge-ai" : "badge-tmpl"}`,
-  }, [isAi ? "✨ AI-generated" : "📋 Template ideas"]);
+  }, [
+    createSvgIcon(isAi ? "sparkle" : "copy"),
+    isAi ? " AI-generated" : " Template ideas",
+  ]);
   container.appendChild(badge);
 
   // Themes
   const themesBlock = createEl("div", { style: "margin-bottom: 20px;" }, [
-    createEl("h3", { style: "font-size: 1.1rem; margin-bottom: 8px;" }, ["🎨 Bespoke Theme Concepts"]),
+    createEl("h3", { className: "section-subtitle" }, [
+      createSvgIcon("palette"),
+      " Bespoke Theme Concepts",
+    ]),
   ]);
   const themesUl = createEl("ul", { style: "padding-left: 20px;" });
   for (const t of ideas.themes || []) {
@@ -329,7 +362,10 @@ function renderIdeasTab(ideas, container) {
   // Menu ideas
   if (ideas.menu_ideas && ideas.menu_ideas.length) {
     const menuBlock = createEl("div", { style: "margin-bottom: 20px;" }, [
-      createEl("h4", { style: "font-size: 1rem; margin-bottom: 6px;" }, ["🍽️ Menu & Culinary Ideas"]),
+      createEl("h4", { style: "font-size: 1rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;" }, [
+        createSvgIcon("utensils"),
+        " Menu & Culinary Ideas",
+      ]),
     ]);
     const menuUl = createEl("ul", { style: "padding-left: 20px; font-size: 0.95rem;" });
     for (const m of ideas.menu_ideas) menuUl.appendChild(createEl("li", {}, [m]));
@@ -340,7 +376,10 @@ function renderIdeasTab(ideas, container) {
   // Activities
   if (ideas.activities && ideas.activities.length) {
     const actBlock = createEl("div", { style: "margin-bottom: 20px;" }, [
-      createEl("h4", { style: "font-size: 1rem; margin-bottom: 6px;" }, ["🎲 Interactive Activities"]),
+      createEl("h4", { style: "font-size: 1rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;" }, [
+        createSvgIcon("activities"),
+        " Interactive Activities",
+      ]),
     ]);
     const actUl = createEl("ul", { style: "padding-left: 20px; font-size: 0.95rem;" });
     for (const a of ideas.activities) actUl.appendChild(createEl("li", {}, [a]));
@@ -351,7 +390,10 @@ function renderIdeasTab(ideas, container) {
   // Decor & Personal Touches
   if (ideas.decor_tips && ideas.decor_tips.length) {
     const decorBlock = createEl("div", { style: "margin-bottom: 20px;" }, [
-      createEl("h4", { style: "font-size: 1rem; margin-bottom: 6px;" }, ["💐 Ambient Decor Suggestions"]),
+      createEl("h4", { style: "font-size: 1rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;" }, [
+        createSvgIcon("decor"),
+        " Ambient Decor Suggestions",
+      ]),
     ]);
     const decorUl = createEl("ul", { style: "padding-left: 20px; font-size: 0.95rem;" });
     for (const d of ideas.decor_tips) decorUl.appendChild(createEl("li", {}, [d]));
@@ -360,8 +402,11 @@ function renderIdeasTab(ideas, container) {
   }
 
   if (ideas.personal_touches && ideas.personal_touches.length) {
-    const touchBlock = createEl("div", { className: "alert-box", style: "background: var(--bg-surface-alt); color: var(--text-main);" }, [
-      createEl("div", { style: "font-weight: 700; margin-bottom: 6px;" }, ["Signature Personal Touches:"]),
+    const touchBlock = createEl("div", { className: "alert-box", style: "background: var(--surface-2); color: var(--text);" }, [
+      createEl("div", { style: "font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;" }, [
+        createSvgIcon("sparkle"),
+        "Signature Personal Touches:",
+      ]),
     ]);
     const touchUl = createEl("ul", { style: "padding-left: 20px;" });
     for (const pt of ideas.personal_touches) touchUl.appendChild(createEl("li", {}, [pt]));
@@ -442,6 +487,31 @@ function onTabKeydown(e) {
 }
 
 /**
+ * Collapse form into a summary bar on tablet/mobile screens after plan generation.
+ * @param {Object} plan 
+ */
+function updateMobileFormCollapse(plan) {
+  const summaryBar = document.getElementById("form-summary-bar");
+  const form = document.getElementById("event-plan-form");
+  const summaryText = document.getElementById("summary-text");
+  if (!summaryBar || !form || !summaryText) return;
+
+  const formattedType = plan.event_type.charAt(0).toUpperCase() + plan.event_type.slice(1);
+  const formattedCost = formatCurrency(plan.total_budget, plan.currency);
+  summaryText.textContent = `${formattedType} · ${plan.guest_count} guests · ${formattedCost} · ${plan.event_date}`;
+
+  if (window.innerWidth < 1024) {
+    summaryBar.removeAttribute("hidden");
+    form.setAttribute("hidden", "");
+    const heading = document.getElementById("results-heading");
+    if (heading) {
+      heading.setAttribute("tabindex", "-1");
+      heading.focus();
+    }
+  }
+}
+
+/**
  * Submit plan form to POST /api/plan.
  * @param {Event} e 
  */
@@ -495,8 +565,7 @@ async function onPlanSubmit(e) {
   }
 
   const btn = document.getElementById("btn-submit-plan");
-  const origText = btn.textContent;
-  btn.textContent = "⏳ Calculating Master Plan...";
+  btn.replaceChildren(createSvgIcon("spinner", "icon-spin"), " Calculating Master Plan...");
   btn.disabled = true;
   announceStatus("Calculating event master plan. Please wait.");
 
@@ -540,12 +609,13 @@ async function onPlanSubmit(e) {
     renderIdeasTab(plan.ideas, document.getElementById("ideas-output"));
 
     activateTab("budget");
+    updateMobileFormCollapse(plan);
     announceStatus("Event plan generated successfully! Displaying budget breakdown.");
   } catch (err) {
     alert(`Could not generate plan: ${err.message}`);
     announceStatus(`Error generating plan: ${err.message}`);
   } finally {
-    btn.textContent = origText;
+    btn.replaceChildren(createSvgIcon("bolt"), " Generate Plan");
     btn.disabled = false;
   }
 }
@@ -628,22 +698,63 @@ function copyPlanAsText() {
 }
 
 /**
- * Initialize theme and font size selectors.
+ * Initialize theme and font size controls.
  */
 function initAccessibilityControls() {
-  const fontSelect = document.getElementById("font-size-select");
-  fontSelect.addEventListener("change", (e) => {
-    document.documentElement.setAttribute("data-font-size", e.target.value);
-    announceStatus(`Text size set to ${e.target.value}.`);
+  // 3-Button Font Size Control
+  const sizeBtns = document.querySelectorAll(".btn-size");
+  sizeBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const size = btn.getAttribute("data-size");
+      document.documentElement.setAttribute("data-font-size", size);
+      sizeBtns.forEach((b) => {
+        const isActive = b === btn;
+        b.classList.toggle("active", isActive);
+        b.setAttribute("aria-pressed", isActive ? "true" : "false");
+      });
+      announceStatus(`Text size set to ${btn.getAttribute("aria-label") || size}.`);
+    });
   });
 
+  // Legacy select if present
+  const fontSelect = document.getElementById("font-size-select");
+  if (fontSelect) {
+    fontSelect.addEventListener("change", (e) => {
+      document.documentElement.setAttribute("data-font-size", e.target.value);
+    });
+  }
+
+  // Theme toggle with aria-pressed and text label
   const themeBtn = document.getElementById("theme-btn");
-  themeBtn.addEventListener("click", () => {
-    const cur = document.documentElement.getAttribute("data-theme");
-    const next = cur === "dark" ? "light" : "dark";
-    document.documentElement.setAttribute("data-theme", next);
-    announceStatus(`Theme switched to ${next} mode.`);
-  });
+  const themeText = document.getElementById("theme-text");
+  if (themeBtn) {
+    const isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    themeBtn.setAttribute("aria-pressed", isDark ? "true" : "false");
+    if (themeText) themeText.textContent = isDark ? "Light Mode" : "Dark Mode";
+
+    themeBtn.addEventListener("click", () => {
+      const cur = document.documentElement.getAttribute("data-theme");
+      const next = cur === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      const isNowDark = next === "dark";
+      themeBtn.setAttribute("aria-pressed", isNowDark ? "true" : "false");
+      if (themeText) themeText.textContent = isNowDark ? "Light Mode" : "Dark Mode";
+      announceStatus(`Theme switched to ${next} mode.`);
+    });
+  }
+
+  // Mobile "Edit details" button
+  const btnEdit = document.getElementById("btn-edit-details");
+  if (btnEdit) {
+    btnEdit.addEventListener("click", () => {
+      const summaryBar = document.getElementById("form-summary-bar");
+      const form = document.getElementById("event-plan-form");
+      if (summaryBar) summaryBar.setAttribute("hidden", "");
+      if (form) form.removeAttribute("hidden");
+      const firstInput = document.getElementById("event_type");
+      if (firstInput) firstInput.focus();
+    });
+  }
 }
 
 /**
