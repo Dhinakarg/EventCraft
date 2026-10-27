@@ -1,7 +1,10 @@
 """Pure deterministic budget allocation and feasibility engine."""
 
-
 from app.engine.profiles import (
+    DEFAULT_CONTINGENCY_RATE,
+    MAX_CONTINGENCY_RATE,
+    MIN_CONTINGENCY_RATE,
+    PRIORITY_BOOST_MULTIPLIER,
     get_budget_profile,
     get_min_per_guest_threshold,
 )
@@ -19,7 +22,7 @@ def _calculate_shifted_weights(
 
     raw_weights: dict[str, float] = {}
     for cat, base_pct, p_key, _ in non_contingency:
-        multiplier = 1.35 if p_key in priorities else 1.0
+        multiplier = PRIORITY_BOOST_MULTIPLIER if p_key in priorities else 1.0
         raw_weights[cat] = base_pct * multiplier
 
     raw_sum = sum(raw_weights.values())
@@ -33,9 +36,7 @@ def _calculate_shifted_weights(
     return normalized
 
 
-def _balance_penny_discrepancy(
-    amounts: list[float], total_budget: float
-) -> list[float]:
+def _balance_penny_discrepancy(amounts: list[float], total_budget: float) -> list[float]:
     """Adjust largest item by penny difference so sum equals total_budget exactly."""
     current_sum = round(sum(amounts), 2)
     diff = round(total_budget - current_sum, 2)
@@ -45,9 +46,7 @@ def _balance_penny_discrepancy(
     return amounts
 
 
-def _check_feasibility(
-    event_type: EventType, total_budget: float, guest_count: int
-) -> tuple[bool, list[str]]:
+def _check_feasibility(event_type: EventType, total_budget: float, guest_count: int) -> tuple[bool, list[str]]:
     """Determine financial feasibility and offer concrete suggestions if underfunded."""
     per_guest = round(total_budget / max(guest_count, 1), 2)
     min_thresh = get_min_per_guest_threshold(event_type)
@@ -63,9 +62,9 @@ def _check_feasibility(
     return False, suggestions
 
 
-def allocate_event_budget(req: EventRequest, contingency_rate: float = 8.0) -> BudgetResponse:
+def allocate_event_budget(req: EventRequest, contingency_rate: float = DEFAULT_CONTINGENCY_RATE) -> BudgetResponse:
     """Allocate budget deterministically with priority weighting and exact balancing."""
-    contingency_rate = max(5.0, min(10.0, contingency_rate))
+    contingency_rate = max(MIN_CONTINGENCY_RATE, min(MAX_CONTINGENCY_RATE, contingency_rate))
     profile = get_budget_profile(req.event_type)
     weights = _calculate_shifted_weights(profile, req.priorities, contingency_rate)
 
@@ -81,10 +80,11 @@ def allocate_event_budget(req: EventRequest, contingency_rate: float = 8.0) -> B
             contingency_fund = amt
         priority_label = "High" if p_key in req.priorities else "Medium"
         tip = f"Target ~{req.currency} {amt:,.2f} ({pct}%)."
-        items.append(BudgetItem(
-            category=cat, percentage=pct, allocated_amount=amt,
-            description=desc, priority=priority_label, tips=tip
-        ))
+        items.append(
+            BudgetItem(
+                category=cat, percentage=pct, allocated_amount=amt, description=desc, priority=priority_label, tips=tip
+            )
+        )
 
     is_feasible, notes = _check_feasibility(req.event_type, req.total_budget, req.guest_count)
     return BudgetResponse(

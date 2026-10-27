@@ -78,11 +78,18 @@ def _schedule_tasks_backward(
         else:
             p_label = "High Priority" if is_crit else "Standard"
 
-        tasks.append(TimelineTask(
-            id=t_id, title=title, phase=phase, due_date=actual_due,
-            days_before_event=target_days, priority=p_label,
-            is_critical=is_crit, status="todo"
-        ))
+        tasks.append(
+            TimelineTask(
+                id=t_id,
+                title=title,
+                phase=phase,
+                due_date=actual_due,
+                days_before_event=target_days,
+                priority=p_label,
+                is_critical=is_crit,
+                status="todo",
+            )
+        )
     return sorted(tasks, key=lambda t: t.due_date)
 
 
@@ -101,9 +108,7 @@ def create_backward_timeline(req: EventRequest) -> TimelineResponse:
         )
 
     templates = _get_task_templates(req.event_type)
-    scheduled_tasks = _schedule_tasks_backward(
-        templates, req.event_date, available_days, std_lead, is_compressed
-    )
+    scheduled_tasks = _schedule_tasks_backward(templates, req.event_date, available_days, std_lead, is_compressed)
     return TimelineResponse(
         lead_time_days=available_days,
         standard_lead_time_days=std_lead,

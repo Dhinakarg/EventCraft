@@ -63,9 +63,7 @@ def _call_gemini_ideas_with_retry(client: genai.Client, prompt: str) -> IdeasRes
     last_err: Exception | None = None
     for _ in range(2):
         try:
-            response = client.models.generate_content(
-                model=settings.gemini_model, contents=prompt, config=cfg
-            )
+            response = client.models.generate_content(model=settings.gemini_model, contents=prompt, config=cfg)
             parsed = json.loads(response.text)
             parsed["source"] = "ai"
             return IdeasResponse.model_validate(parsed)
@@ -103,9 +101,7 @@ def _call_gemini_chat_with_retry(client: genai.Client, prompt: str) -> str:
     last_err: Exception | None = None
     for _ in range(2):
         try:
-            response = client.models.generate_content(
-                model=settings.gemini_model, contents=prompt
-            )
+            response = client.models.generate_content(model=settings.gemini_model, contents=prompt)
             return sanitize_raw_text(response.text or "", 600)
         except Exception as err:
             last_err = err

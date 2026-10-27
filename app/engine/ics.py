@@ -1,6 +1,6 @@
 """Pure deterministic RFC 5545 iCalendar (.ics) generation utility."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.models import TimelineTask
 
@@ -23,7 +23,7 @@ def _format_vevent(task: TimelineTask, now_str: str) -> list[str]:
 
 def generate_ics_calendar(tasks: list[TimelineTask], event_name: str = "Event Plan") -> str:
     """Generate valid iCalendar (.ics) string from a list of timeline tasks."""
-    now_str = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
+    now_str = datetime.now(UTC).strftime("%Y%m%dT%H%M%S")
     lines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",

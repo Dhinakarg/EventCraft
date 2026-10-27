@@ -5,7 +5,7 @@ from app.sanitizer import mask_sensitive_info, sanitize_raw_text, sanitize_text
 
 def test_sanitize_text_strips_control_characters() -> None:
     """Test removing control characters and limiting length."""
-    raw = "Hello\x00\x08World\x1F!"
+    raw = "Hello\x00\x08World\x1f!"
     cleaned = sanitize_text(raw, max_length=10)
     assert cleaned == "HelloWorld"
 

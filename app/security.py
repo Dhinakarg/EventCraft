@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.config import get_settings
+from app.engine.profiles import RATE_LIMIT_WINDOW_SECONDS
 
 # In-memory IP tracking: ip -> list of timestamps
 _RATE_LIMIT_STORE: dict[str, list[float]] = {}
@@ -15,7 +16,7 @@ _RATE_LIMIT_STORE: dict[str, list[float]] = {}
 def check_rate_limit(client_ip: str, limit_per_minute: int) -> bool:
     """Return True if request is within limit, False if exceeded."""
     now = time.time()
-    window_start = now - 60.0
+    window_start = now - RATE_LIMIT_WINDOW_SECONDS
 
     timestamps = _RATE_LIMIT_STORE.get(client_ip, [])
     active = [ts for ts in timestamps if ts > window_start]

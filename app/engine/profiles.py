@@ -1,7 +1,14 @@
 """Event profiles defining standard budget weights, vendor categories, and lead times."""
 
-
 from app.models import EventType
+
+# Universal Engine Constants & Calculation Factors (moved from magic numbers)
+DEFAULT_CONTINGENCY_RATE: float = 8.0
+MIN_CONTINGENCY_RATE: float = 5.0
+MAX_CONTINGENCY_RATE: float = 10.0
+PRIORITY_BOOST_MULTIPLIER: float = 1.35
+DEFAULT_VENDOR_BUDGET_RATIO: float = 0.15
+RATE_LIMIT_WINDOW_SECONDS: float = 60.0
 
 # Standard budget allocation profiles (sum to 100%)
 # (Category, standard_percentage, priority_key, description)

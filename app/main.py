@@ -46,18 +46,28 @@ def create_event_plan(req: EventRequest) -> PlanResponse:
     warnings = _build_warnings(budget.is_feasible, budget.feasibility_notes, timeline.rush_warning)
 
     ideas_req = IdeasRequest(
-        event_type=req.event_type.value, vibe=req.vibe,
-        dietary=req.dietary, guest_count=req.guest_count,
-        city=req.city, notes=req.notes or "",
+        event_type=req.event_type.value,
+        vibe=req.vibe,
+        dietary=req.dietary,
+        guest_count=req.guest_count,
+        city=req.city,
+        notes=req.notes or "",
     )
     ideas = generate_event_ideas(ideas_req)
 
     return PlanResponse(
-        event_type=req.event_type, event_date=req.event_date,
-        guest_count=req.guest_count, total_budget=req.total_budget,
-        currency=req.currency, city=req.city, vibe=req.vibe,
-        budget=budget, timeline=timeline, vendors=vendors,
-        warnings=warnings, ideas=ideas,
+        event_type=req.event_type,
+        event_date=req.event_date,
+        guest_count=req.guest_count,
+        total_budget=req.total_budget,
+        currency=req.currency,
+        city=req.city,
+        vibe=req.vibe,
+        budget=budget,
+        timeline=timeline,
+        vendors=vendors,
+        warnings=warnings,
+        ideas=ideas,
     )
 
 
@@ -75,8 +85,11 @@ def export_timeline_ics(
 ) -> Response:
     """Export backward-scheduled event timeline as an iCalendar (.ics) file."""
     req = EventRequest(
-        event_type=event_type, event_date=event_date,
-        guest_count=guest_count, total_budget=total_budget, vibe=vibe,
+        event_type=event_type,
+        event_date=event_date,
+        guest_count=guest_count,
+        total_budget=total_budget,
+        vibe=vibe,
     )
     timeline = create_backward_timeline(req)
     ics_text = generate_ics_calendar(timeline.tasks, f"{vibe} {event_type.value}")
@@ -123,5 +136,6 @@ app = create_app()
 
 if __name__ == "__main__":
     import uvicorn
+
     cfg = get_settings()
     uvicorn.run("app.main:app", host=cfg.host, port=cfg.port, reload=True)

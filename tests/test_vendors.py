@@ -61,3 +61,32 @@ def test_community_vendor_categories() -> None:
     categories = [c.category for c in checklist]
     assert any("Staging" in cat for cat in categories)
     assert any("Sound" in cat for cat in categories)
+
+
+def test_vendor_checklist_unmatched_budget_fallback() -> None:
+    """Verify vendor checklist falls back to default ratio if budget categories are unmatched."""
+    from app.models import BudgetResponse
+
+    target_date = date.today() + timedelta(days=90)
+    req = EventRequest(
+        event_type=EventType.WEDDING,
+        event_date=target_date,
+        guest_count=50,
+        total_budget=10000.0,
+    )
+    # Budget with items that have zero name overlap with wedding vendor specs
+    custom_budget = BudgetResponse(
+        total_budget=10000.0,
+        per_guest_cost=200.0,
+        currency="USD",
+        contingency_fund=800.0,
+        contingency_percentage=8.0,
+        is_feasible=True,
+        feasibility_notes=[],
+        items=[],
+    )
+    checklist = build_vendor_checklist(req, custom_budget)
+    assert len(checklist) > 0
+    # Expected fallback is 15% of 10000 = 1500.0
+    for item in checklist:
+        assert item.budget_cap == 1500.0

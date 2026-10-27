@@ -57,7 +57,7 @@ def test_feasibility_check_underfunded_warning() -> None:
         event_type=EventType.WEDDING,
         event_date=date.today() + timedelta(days=100),
         guest_count=500,
-        total_budget=5000.0, # $10/guest is below $90 wedding threshold
+        total_budget=5000.0,  # $10/guest is below $90 wedding threshold
     )
     res = allocate_event_budget(req)
     assert res.is_feasible is False
@@ -92,7 +92,7 @@ def test_invalid_event_request_inputs() -> None:
     with pytest.raises(ValidationError):
         EventRequest(
             event_type=EventType.WEDDING,
-            event_date=date.today() - timedelta(days=1), # past date
+            event_date=date.today() - timedelta(days=1),  # past date
             guest_count=50,
             total_budget=1000.0,
         )
@@ -102,7 +102,7 @@ def test_invalid_event_request_inputs() -> None:
             event_type=EventType.WEDDING,
             event_date=date.today() + timedelta(days=30),
             guest_count=50,
-            total_budget=0.0, # zero budget
+            total_budget=0.0,  # zero budget
         )
 
     with pytest.raises(ValidationError):
@@ -111,5 +111,5 @@ def test_invalid_event_request_inputs() -> None:
             event_date=date.today() + timedelta(days=30),
             guest_count=50,
             total_budget=1000.0,
-            priorities=["venue", "food", "decor", "photography"], # > 3 priorities
+            priorities=["venue", "food", "decor", "photography"],  # > 3 priorities
         )

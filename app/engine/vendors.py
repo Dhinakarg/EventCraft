@@ -2,6 +2,7 @@
 
 from datetime import date, timedelta
 
+from app.engine.profiles import DEFAULT_VENDOR_BUDGET_RATIO
 from app.models import BudgetResponse, EventRequest, EventType, VendorChecklistItem
 
 
@@ -122,16 +123,12 @@ def _get_vendor_specs(event_type: EventType) -> list[tuple[str, int, list[str]]]
     return _community_vendor_specs()
 
 
-def build_vendor_checklist(
-    req: EventRequest, budget: BudgetResponse
-) -> list[VendorChecklistItem]:
+def build_vendor_checklist(req: EventRequest, budget: BudgetResponse) -> list[VendorChecklistItem]:
     """Build vendor checklist with budget caps, booking deadlines, and questions."""
     today = date.today()
     specs = _get_vendor_specs(req.event_type)
 
-    cat_budgets: dict[str, float] = {
-        item.category.lower(): item.allocated_amount for item in budget.items
-    }
+    cat_budgets: dict[str, float] = {item.category.lower(): item.allocated_amount for item in budget.items}
 
     checklist: list[VendorChecklistItem] = []
     for cat_name, lead_days, questions in specs:
@@ -144,7 +141,7 @@ def build_vendor_checklist(
                 matched_cap = b_amt
                 break
         if matched_cap == 0.0:
-            matched_cap = round(req.total_budget * 0.15, 2)
+            matched_cap = round(req.total_budget * DEFAULT_VENDOR_BUDGET_RATIO, 2)
 
         checklist.append(
             VendorChecklistItem(

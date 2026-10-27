@@ -1,6 +1,5 @@
 """Curated context-aware deterministic fallback generators for ideas and chat."""
 
-
 from app.ai.schemas import ChatRefineResponse, IdeasRequest, IdeasResponse
 
 
