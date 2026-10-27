@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EventCraft AI — Intelligent Event Planner for Weddings, Birthdays & Community Events</title>
+  <meta name="description" content="Plan weddings, milestone birthdays, and community festivals with pure deterministic budget allocation, run-of-show timelines, vendor questions, and GenAI creative sparks.">
+  <meta name="theme-color" content="#0b0f19">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <!-- Accessible Skip Link for Screen Readers & Keyboard Navigation -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Top Navigation Bar -->
+  <header class="header-bar" role="banner">
+    <div class="header-container">
+      <div class="brand-wrapper">
+        <div class="brand-icon" aria-hidden="true">✨</div>
+        <div>
+          <span class="brand-title">EventCraft AI</span>
+          <span class="brand-badge" id="plan-status-badge">Engine Ready</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="theme-toggle" class="btn btn-secondary btn-sm" aria-label="Toggle visual theme between dark and light modes">
+          ☀️ Light
+        </button>
+        <a href="#panel-chat" class="btn btn-primary btn-sm" id="btn-jump-copilot">
+          💬 Co-Planner Chat
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Shell -->
+  <main id="main-content" class="main-layout" role="main">
+    <!-- Hero Banner with Quick Preset Selectors -->
+    <section class="hero-banner" aria-labelledby="hero-title">
+      <h1 id="hero-title" class="hero-title">Craft Unforgettable Events with Precision & Imagination</h1>
+      <p class="hero-subtitle">
+        Combining pure deterministic budget & timeline engines with GenAI creative assistance for weddings, milestone birthdays, and community gatherings.
+      </p>
+      <div class="quick-pills" role="region" aria-label="Quick start event presets">
+        <span style="font-size: 0.85rem; color: var(--text-muted); align-self: center;">Quick Presets:</span>
+        <button type="button" class="pill-preset" data-preset="wedding" id="preset-wedding">💍 Coastal Wedding</button>
+        <button type="button" class="pill-preset" data-preset="birthday" id="preset-birthday">🎉 30th Rooftop Glow</button>
+        <button type="button" class="pill-preset" data-preset="community" id="preset-community">🌳 Harvest Festival</button>
+      </div>
+    </section>
+
+    <!-- Two Column App Layout -->
+    <div class="planner-grid">
+      <!-- Left Column: Event Configuration Form -->
+      <aside class="config-sidebar" aria-label="Event Configuration Panel">
+        <section class="config-card">
+          <h2 class="card-title">
+            <span aria-hidden="true">⚙️</span> Event Parameters
+          </h2>
+          <form id="planner-form" novalidate>
+            <!-- Event Type -->
+            <div class="form-group">
+              <label for="event_type" class="form-label">Event Category</label>
+              <select id="event_type" class="form-control" name="event_type">
+                <option value="wedding">💍 Wedding & Reception</option>
+                <option value="birthday">🎂 Birthday Celebration</option>
+                <option value="community">🎪 Community Event & Festival</option>
+              </select>
+            </div>
+
+            <!-- Event Name -->
+            <div class="form-group">
+              <div class="form-label">
+                <label for="event_name">Event Name</label>
+                <span class="char-count" id="name_count" aria-live="polite">0/120</span>
+              </div>
+              <input type="text" id="event_name" name="event_name" class="form-control" maxlength="120" required value="Eleanor & James Coastal Wedding">
+            </div>
+
+            <!-- Total Budget & Range Slider -->
+            <div class="form-group">
+              <div class="form-label">
+                <label for="budget_total">Total Budget ($ USD)</label>
+                <span class="char-count" id="per_guest_preview" aria-live="polite">~$0/guest</span>
+              </div>
+              <input type="number" id="budget_total" name="budget_total" class="form-control" min="100" max="10000000" step="100" value="28000">
+              <input type="range" id="budget_range" class="form-control" min="1000" max="100000" step="500" value="28000" style="margin-top: 8px;" aria-label="Quick adjust total budget">
+            </div>
+
+            <!-- Guest Count & Date -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="guest_count" class="form-label">Guest Count</label>
+                <input type="number" id="guest_count" name="guest_count" class="form-control" min="1" max="10000" value="85">
+              </div>
+              <div class="form-group">
+                <label for="event_date" class="form-label">Event Date</label>
+                <input type="date" id="event_date" name="event_date" class="form-control" value="2027-06-18">
+              </div>
+            </div>
+
+            <!-- Time & Duration -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="start_time" class="form-label">Start Time</label>
+                <input type="time" id="start_time" name="start_time" class="form-control" value="16:00">
+              </div>
+              <div class="form-group">
+                <label for="duration_hours" class="form-label">Duration (Hrs)</label>
+                <input type="number" id="duration_hours" name="duration_hours" class="form-control" min="1" max="24" step="0.5" value="6.0">
+              </div>
+            </div>
+
+            <!-- Style Preference & Location Type -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="style_preference" class="form-label">Aesthetic Style</label>
+                <input type="text" id="style_preference" name="style_preference" class="form-control" maxlength="50" value="Coastal Elegance">
+              </div>
+              <div class="form-group">
+                <label for="location_type" class="form-label">Venue Type</label>
+                <select id="location_type" name="location_type" class="form-control">
+                  <option value="indoor">Indoor Hall / Lounge</option>
+                  <option value="outdoor">Outdoor Park / Lawn</option>
+                  <option value="hybrid" selected>Hybrid (Indoor + Terrace)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Custom Notes -->
+            <div class="form-group">
+              <div class="form-label">
+                <label for="custom_notes">Notes & Specific Requests</label>
+                <span class="char-count" id="notes_count" aria-live="polite">0/500</span>
+              </div>
+              <textarea id="custom_notes" name="custom_notes" class="form-control" rows="3" maxlength="500">Sunset oceanfront ceremony followed by garden reception with fresh seafood.</textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="btn-generate-plan" class="btn btn-primary" style="width: 100%;">
+              ⚡ Recalculate Master Plan
+            </button>
+          </form>
+        </section>
+      </aside>
+
+      <!-- Right Column: Tabs Dashboard -->
+      <section class="dashboard-area" aria-label="Event Plan Output Modules">
+        <!-- Accessible Tab Navigation Bar -->
+        <div class="tabs-nav" role="tablist" aria-label="Event Plan Views">
+          <button type="button" class="tab-btn" role="tab" id="tab-budget" aria-selected="true" aria-controls="panel-budget" data-tab="budget">
+            💰 Budget Allocation
+          </button>
+          <button type="button" class="tab-btn" role="tab" id="tab-timeline" aria-selected="false" aria-controls="panel-timeline" data-tab="timeline">
+            ⏱️ Timeline & Run-of-Show
+          </button>
+          <button type="button" class="tab-btn" role="tab" id="tab-vendors" aria-selected="false" aria-controls="panel-vendors" data-tab="vendors">
+            🤝 Vendor Guide
+          </button>
+          <button type="button" class="tab-btn" role="tab" id="tab-checklist" aria-selected="false" aria-controls="panel-checklist" data-tab="checklist">
+            ✅ Phased Checklist
+          </button>
+          <button type="button" class="tab-btn" role="tab" id="tab-creative" aria-selected="false" aria-controls="panel-creative" data-tab="creative">
+            ✨ AI Creative Studio
+          </button>
+          <button type="button" class="tab-btn" role="tab" id="tab-chat" aria-selected="false" aria-controls="panel-chat" data-tab="chat">
+            💬 Plan Co-Pilot
+          </button>
+        </div>
+
+        <!-- Tab 1: Budget Panel -->
+        <div id="panel-budget" class="tab-panel active" role="tabpanel" aria-labelledby="tab-budget">
+          <div id="budget-container" aria-live="polite">
+            <!-- Rendered by dom.js -->
+          </div>
+        </div>
+
+        <!-- Tab 2: Timeline Panel -->
+        <div id="panel-timeline" class="tab-panel" role="tabpanel" aria-labelledby="tab-timeline">
+          <div id="timeline-container" aria-live="polite">
+            <!-- Rendered by dom.js -->
+          </div>
+        </div>
+
+        <!-- Tab 3: Vendors Panel -->
+        <div id="panel-vendors" class="tab-panel" role="tabpanel" aria-labelledby="tab-vendors">
+          <div id="vendors-container" aria-live="polite">
+            <!-- Rendered by dom.js -->
+          </div>
+        </div>
+
+        <!-- Tab 4: Checklist Panel -->
+        <div id="panel-checklist" class="tab-panel" role="tabpanel" aria-labelledby="tab-checklist">
+          <div id="checklist-container" aria-live="polite">
+            <!-- Rendered by dom.js -->
+          </div>
+        </div>
+
+        <!-- Tab 5: AI Creative Studio Panel -->
+        <div id="panel-creative" class="tab-panel" role="tabpanel" aria-labelledby="tab-creative">
+          <div class="ai-box">
+            <h3 class="card-title">🎨 GenAI Creative Ideation Studio</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.92rem;">
+              Generate bespoke creative themes, vows/speech talking points, culinary ideas, or game prompts powered by Gemini.
+            </p>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="idea-topic" class="form-label">Creative Focus Topic</label>
+                <select id="idea-topic" class="form-control">
+                  <option value="themes">🎨 Themes & Color Stories</option>
+                  <option value="decor">💐 Decor & Atmosphere Installations</option>
+                  <option value="activities">🎲 Interactive Games & Activities</option>
+                  <option value="speeches">📝 Vows & Speech Talking Points</option>
+                  <option value="culinary">🍸 Signature Cocktails & Midnight Bites</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="idea-context" class="form-label">Specific Request or Vibe</label>
+                <input type="text" id="idea-context" class="form-control" maxlength="200" placeholder="e.g. golden hour oceanfront glow, romantic acoustic vibe">
+              </div>
+            </div>
+            <button type="button" id="btn-generate-ideas" class="btn btn-primary">
+              ✨ Generate Creative Sparks
+            </button>
+            <div id="ideas-output" aria-live="polite">
+              <!-- Rendered by dom.js -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 6: Conversational Copilot Chat Panel -->
+        <div id="panel-chat" class="tab-panel" role="tabpanel" aria-labelledby="tab-chat">
+          <div class="chat-window">
+            <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="Conversation with EventCraft Co-Pilot">
+              <!-- Initial message injected via app.js -->
+            </div>
+            <div class="quick-suggestions" aria-label="Quick questions for co-pilot">
+              <button type="button" class="btn-chip">How can I trim 10% from catering costs?</button>
+              <button type="button" class="btn-chip">What questions must I ask the DJ?</button>
+              <button type="button" class="btn-chip">How much setup time is needed for florals?</button>
+            </div>
+            <div class="chat-input-bar">
+              <label for="chat-input" class="sr-only">Ask EventCraft AI a question</label>
+              <input type="text" id="chat-input" class="form-control" maxlength="500" placeholder="Ask about timeline buffers, vendor vetting, or budget trimming...">
+              <button type="button" id="btn-send-chat" class="btn btn-primary" aria-label="Send message to AI Co-Pilot">
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer-bar" role="contentinfo">
+    <p>EventCraft AI • Deterministic Planning Engine + Google GenAI Creative Co-Pilot • WCAG 2.1 AA Compliant</p>
+  </footer>
+
+  <!-- Application Module Scripts -->
+  <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>
