@@ -52,17 +52,17 @@
                 <option value="birthday">🎂 Birthday Party</option>
                 <option value="community">🎪 Community Festival</option>
               </select>
-              <p id="type-desc" class="input-desc">Determines budget allocation and standard lead times.</p>
+              <p id="type-desc" class="input-desc hint">Determines budget allocation and standard lead times.</p>
             </div>
 
             <div class="form-group">
               <label for="event_date">Event Date (Must be in future)</label>
               <input type="date" id="event_date" name="event_date" class="form-control" required aria-required="true" aria-invalid="false" aria-describedby="date-help error-date">
-              <p id="date-help" class="input-desc">Used to calculate backward-scheduled milestones.</p>
+              <p id="date-help" class="input-desc hint">Used to calculate backward-scheduled milestones.</p>
               <p id="error-date" class="input-error" role="alert" hidden>Please select a valid future date.</p>
             </div>
 
-            <div class="form-row">
+            <div class="form-row field-row">
               <div class="form-group">
                 <label for="guest_count">Guests (1 - 2000)</label>
                 <input type="number" id="guest_count" name="guest_count" class="form-control" min="1" max="2000" value="80" required aria-required="true" aria-invalid="false" aria-describedby="error-guests">
@@ -80,17 +80,17 @@
           <!-- Fieldset 2: Vibe & Location -->
           <fieldset>
             <legend>Vibe & Location</legend>
-            <div class="form-row">
+            <div class="form-row field-row">
               <div class="form-group">
                 <label for="vibe">Aesthetic Vibe</label>
                 <input type="text" id="vibe" name="vibe" class="form-control" maxlength="80" value="Coastal Elegance" aria-describedby="vibe-desc">
-                <p id="vibe-desc" class="input-desc">e.g. Modern Minimalist, Rustic, Boho.</p>
+                <p id="vibe-desc" class="input-desc hint">e.g. Modern Minimalist, Rustic, Boho.</p>
               </div>
 
               <div class="form-group">
                 <label for="city">City / Destination</label>
                 <input type="text" id="city" name="city" class="form-control" maxlength="100" value="Carmel-by-the-Sea" aria-describedby="city-desc">
-                <p id="city-desc" class="input-desc">City or region for vendor lead times.</p>
+                <p id="city-desc" class="input-desc hint">City or region for vendor lead times.</p>
               </div>
             </div>
 
@@ -104,13 +104,13 @@
                 <option value="entertainment">Music & Entertainment</option>
                 <option value="other">Other</option>
               </select>
-              <p id="prio-help" class="input-desc">Shifts budget allocation toward your priorities.</p>
+              <p id="prio-help" class="input-desc hint">Shifts budget allocation toward your priorities.</p>
             </div>
 
             <div class="form-group">
               <label for="custom_notes">Notes & Special Requests</label>
               <textarea id="custom_notes" name="custom_notes" class="form-control" rows="2" maxlength="500" placeholder="Dietary notes, timing preferences, etc." aria-describedby="notes-desc">Sunset ceremony with local farm-to-table dining.</textarea>
-              <p id="notes-desc" class="input-desc">Maximum 500 characters.</p>
+              <p id="notes-desc" class="input-desc hint">Maximum 500 characters.</p>
             </div>
           </fieldset>
 
