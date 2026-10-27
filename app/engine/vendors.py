@@ -124,7 +124,15 @@ def _get_vendor_specs(event_type: EventType) -> list[tuple[str, int, list[str]]]
 
 
 def build_vendor_checklist(req: EventRequest, budget: BudgetResponse) -> list[VendorChecklistItem]:
-    """Build vendor checklist with budget caps, booking deadlines, and questions."""
+    """Build vendor checklist with budget caps, booking deadlines, and questions.
+
+    Args:
+        req: Validated event request containing total budget and event date.
+        budget: Calculated budget response containing itemized allocations.
+
+    Returns:
+        List of VendorChecklistItem with matched budget caps and interview prompts.
+    """
     today = date.today()
     specs = _get_vendor_specs(req.event_type)
 

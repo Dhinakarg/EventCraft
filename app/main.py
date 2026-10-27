@@ -39,7 +39,14 @@ def health_endpoint() -> dict:
 
 
 def create_event_plan(req: EventRequest) -> PlanResponse:
-    """Generate master plan combining pure deterministic engines and GenAI ideas."""
+    """Generate master plan combining pure deterministic engines and GenAI ideas.
+
+    Args:
+        req: Validated user event request.
+
+    Returns:
+        PlanResponse with budget, timeline, vendors, warnings, and creative ideas.
+    """
     budget = allocate_event_budget(req)
     timeline = create_backward_timeline(req)
     vendors = build_vendor_checklist(req, budget)
@@ -108,28 +115,28 @@ def serve_index() -> FileResponse:
 def create_app() -> FastAPI:
     """Build and configure the FastAPI application instance."""
     settings = get_settings()
-    app = FastAPI(title=settings.app_name, version="1.0.0")
+    application = FastAPI(title=settings.app_name, version="1.0.0")
 
-    app.add_middleware(SecurityHeadersMiddleware)
-    app.add_middleware(
+    application.add_middleware(SecurityHeadersMiddleware)
+    application.add_middleware(
         CORSMiddleware,
         allow_origins=settings.get_cors_origins(),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    app.add_exception_handler(Exception, generic_exception_handler)
+    application.add_exception_handler(Exception, generic_exception_handler)
 
-    app.add_api_route("/health", health_endpoint, methods=["GET"])
-    app.add_api_route("/api/plan", create_event_plan, methods=["POST"], response_model=PlanResponse)
-    app.add_api_route("/api/chat", chat_endpoint, methods=["POST"], response_model=ChatRefineResponse)
-    app.add_api_route("/api/export/ics", export_timeline_ics, methods=["GET"])
-    app.add_api_route("/", serve_index, methods=["GET"])
+    application.add_api_route("/health", health_endpoint, methods=["GET"])
+    application.add_api_route("/api/plan", create_event_plan, methods=["POST"], response_model=PlanResponse)
+    application.add_api_route("/api/chat", chat_endpoint, methods=["POST"], response_model=ChatRefineResponse)
+    application.add_api_route("/api/export/ics", export_timeline_ics, methods=["GET"])
+    application.add_api_route("/", serve_index, methods=["GET"])
 
     if STATIC_DIR.exists():
-        app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+        application.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-    return app
+    return application
 
 
 app = create_app()

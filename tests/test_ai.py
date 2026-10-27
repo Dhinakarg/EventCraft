@@ -97,10 +97,12 @@ def test_chat_refine_and_topic_constraint() -> None:
     """Verify chat refine function answers event queries and redirects off-topic questions."""
     clear_cache()
     off_topic = "Can you write Python code to hack a database server?"
-    res_off = refine_plan_chat(plan_context="Budget: $10,000", question=off_topic)
-    assert res_off.source == "fallback"
-    assert "event planning" in res_off.reply.lower()
-
     on_topic = "How can I reduce catering costs for 100 guests?"
-    res_on = refine_plan_chat(plan_context="Budget: $10,000", question=on_topic)
-    assert any(k in res_on.reply.lower() for k in ("cost", "catering", "produce", "venue"))
+
+    with patch("app.ai.gemini_client._get_client", return_value=None):
+        res_off = refine_plan_chat(plan_context="Budget: $10,000", question=off_topic)
+        assert res_off.source == "fallback"
+        assert "event planning" in res_off.reply.lower()
+
+        res_on = refine_plan_chat(plan_context="Budget: $10,000", question=on_topic)
+        assert any(k in res_on.reply.lower() for k in ("cost", "catering", "produce", "venue"))

@@ -16,7 +16,7 @@ WEDDING_PROFILE: list[tuple[str, float, str, str]] = [
     ("Venue & Facility", 30.0, "venue", "Primary venue space, rentals, and setup"),
     ("Catering & Bar", 30.0, "food", "Full dinner, appetizers, beverages, and service staff"),
     ("Decor & Florals", 10.0, "decor", "Centerpieces, bouquet, ceremony arch, and styling"),
-    ("Photography & Video", 8.0, "photography", "Full day ceremony & reception photo/video coverage"),
+    ("Photography & Video", 8.0, "photography", "Full ceremony and reception photo/video coverage"),
     ("Attire & Beauty", 8.0, "other", "Wardrobe, accessories, hair, and makeup"),
     ("Entertainment & Music", 6.0, "entertainment", "DJ, live band, sound equipment, and emcee"),
     ("Contingency & Misc", 8.0, "contingency", "Reserved emergency buffer and miscellaneous fees"),
@@ -34,10 +34,10 @@ BIRTHDAY_PROFILE: list[tuple[str, float, str, str]] = [
 COMMUNITY_PROFILE: list[tuple[str, float, str, str]] = [
     ("Permits & Staging", 26.0, "venue", "Municipal permits, park fees, stages, and tents"),
     ("Refreshments & Food", 28.0, "food", "Water stations, community snacks, meal boxes"),
-    ("Sound & Production", 16.0, "entertainment", "PA systems, microphones, generators, and audio lead"),
+    ("Sound & Production", 16.0, "entertainment", "PA systems, microphones, and audio equipment"),
     ("Signage & Decor", 12.0, "decor", "Directional banners, accessible ramps, and flags"),
     ("Activities & Supplies", 10.0, "other", "Workshops, volunteer kits, badges, and games"),
-    ("Contingency & Safety", 8.0, "contingency", "First-aid, emergency sanitation, and reserve fund"),
+    ("Contingency & Safety", 8.0, "contingency", "First-aid, sanitation, and emergency fund"),
 ]
 
 # Standard lead-time requirements in days

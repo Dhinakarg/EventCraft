@@ -4,7 +4,7 @@ import time
 
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 from app.config import get_settings
 from app.engine.profiles import RATE_LIMIT_WINDOW_SECONDS
@@ -34,10 +34,10 @@ def clear_rate_limits() -> None:
     _RATE_LIMIT_STORE.clear()
 
 
-class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):  # pylint: disable=too-few-public-methods
     """Add essential security headers and enforce per-IP rate limits."""
 
-    async def dispatch(self, request: Request, call_next) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         """Process incoming request, apply rate limiting, and inject security headers."""
         settings = get_settings()
         client_ip = request.client.host if request.client else "unknown"
@@ -64,7 +64,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 
-async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+async def generic_exception_handler(_request: Request, _exc: Exception) -> JSONResponse:
     """Generic error handler that never leaks stack traces, secrets, or internal details."""
     return JSONResponse(
         status_code=500,

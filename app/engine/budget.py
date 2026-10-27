@@ -55,8 +55,12 @@ def _check_feasibility(
     if per_guest >= min_thresh:
         return True, ["Budget is healthy and realistic for the projected guest count."]
 
+    alert_msg = (
+        f"Budget alert: Per-guest cost ({currency} {per_guest:,.2f}) is below "
+        f"the recommended minimum ({currency} {min_thresh:,.2f})."
+    )
     suggestions = [
-        f"Budget alert: Per-guest cost ({currency} {per_guest:,.2f}) is below the recommended minimum ({currency} {min_thresh:,.2f}).",
+        alert_msg,
         "Suggestion: Reduce guest count to comfortably preserve dining and venue standards.",
         "Suggestion: Shorten event duration or select off-peak weekday/Sunday time slots.",
         "Suggestion: Adopt DIY floral and table decor to maximize hospitality and catering funds.",
@@ -64,15 +68,12 @@ def _check_feasibility(
     return False, suggestions
 
 
-def allocate_event_budget(req: EventRequest, contingency_rate: float = DEFAULT_CONTINGENCY_RATE) -> BudgetResponse:
-    """Allocate budget deterministically with priority weighting and exact balancing."""
-    contingency_rate = max(MIN_CONTINGENCY_RATE, min(MAX_CONTINGENCY_RATE, contingency_rate))
-    profile = get_budget_profile(req.event_type)
-    weights = _calculate_shifted_weights(profile, req.priorities, contingency_rate)
-
-    raw_amounts = [round(req.total_budget * (weights[item[0]] / 100.0), 2) for item in profile]
-    balanced_amounts = _balance_penny_discrepancy(raw_amounts, req.total_budget)
-
+def _build_budget_items(
+    profile: list[tuple[str, float, str, str]],
+    balanced_amounts: list[float],
+    req: EventRequest,
+) -> tuple[list[BudgetItem], float]:
+    """Construct BudgetItem list and extract contingency fund amount."""
     items: list[BudgetItem] = []
     contingency_fund = 0.0
     for idx, (cat, _, p_key, desc) in enumerate(profile):
@@ -84,11 +85,37 @@ def allocate_event_budget(req: EventRequest, contingency_rate: float = DEFAULT_C
         tip = f"Target ~{req.currency} {amt:,.2f} ({pct}%)."
         items.append(
             BudgetItem(
-                category=cat, percentage=pct, allocated_amount=amt, description=desc, priority=priority_label, tips=tip
+                category=cat,
+                percentage=pct,
+                allocated_amount=amt,
+                description=desc,
+                priority=priority_label,
+                tips=tip,
             )
         )
+    return items, contingency_fund
 
+
+def allocate_event_budget(req: EventRequest, contingency_rate: float = DEFAULT_CONTINGENCY_RATE) -> BudgetResponse:
+    """Allocate budget deterministically with priority weighting and exact balancing.
+
+    Args:
+        req: Validated event request containing total budget, guest count, and priorities.
+        contingency_rate: Percentage of total budget reserved for emergency buffer.
+
+    Returns:
+        BudgetResponse with balanced line items, per-guest spending, and feasibility notes.
+    """
+    contingency_rate = max(MIN_CONTINGENCY_RATE, min(MAX_CONTINGENCY_RATE, contingency_rate))
+    profile = get_budget_profile(req.event_type)
+    weights = _calculate_shifted_weights(profile, req.priorities, contingency_rate)
+
+    raw_amounts = [round(req.total_budget * (weights[item[0]] / 100.0), 2) for item in profile]
+    balanced_amounts = _balance_penny_discrepancy(raw_amounts, req.total_budget)
+
+    items, contingency_fund = _build_budget_items(profile, balanced_amounts, req)
     is_feasible, notes = _check_feasibility(req.event_type, req.total_budget, req.guest_count, req.currency)
+
     return BudgetResponse(
         total_budget=round(req.total_budget, 2),
         per_guest_cost=round(req.total_budget / req.guest_count, 2),

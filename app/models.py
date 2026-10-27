@@ -63,7 +63,8 @@ class EventRequest(BaseModel):
         for p in v:
             norm = p.strip().lower()
             if norm not in VALID_PRIORITIES:
-                raise ValueError(f"Invalid priority '{p}'. Must be one of {sorted(VALID_PRIORITIES)}")
+                msg = f"Invalid priority '{p}'. Must be one of {sorted(VALID_PRIORITIES)}"
+                raise ValueError(msg)
             if norm not in cleaned:
                 cleaned.append(norm)
         return cleaned

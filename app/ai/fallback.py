@@ -15,7 +15,7 @@ def _build_dietary_menu(event_type: str, dietary: list[str]) -> list[str]:
         ]
     if "birthday" in event_type.lower():
         return [
-            f"Interactive street taco bar with carnitas, jackfruit, and cilantro lime rice ({labels})",
+            f"Interactive taco bar with carnitas, jackfruit, and cilantro rice ({labels})",
             f"Custom milestone birthday cake crafted with {labels} options",
             "Signature sparkling mocktail station with cold-pressed berries and fresh mint",
         ]

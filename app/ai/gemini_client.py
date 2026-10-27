@@ -64,16 +64,24 @@ def _call_gemini_ideas_with_retry(client: genai.Client, prompt: str) -> IdeasRes
     for _ in range(2):
         try:
             response = client.models.generate_content(model=settings.gemini_model, contents=prompt, config=cfg)
-            parsed = json.loads(response.text)
+            raw_text = response.text or "{}"
+            parsed = json.loads(raw_text)
             parsed["source"] = "ai"
             return IdeasResponse.model_validate(parsed)
-        except Exception as err:
+        except Exception as err:  # pylint: disable=broad-exception-caught
             last_err = err
     raise last_err or RuntimeError("Gemini ideas generation failed")
 
 
 def generate_event_ideas(req: IdeasRequest) -> IdeasResponse:
-    """Generate structured creative ideas using Gemini AI or fallback with caching."""
+    """Generate structured creative ideas using Gemini AI or fallback with caching.
+
+    Args:
+        req: Validated ideas request containing event type, vibe, city, and dietary needs.
+
+    Returns:
+        IdeasResponse with themes, decor suggestions, menu ideas, and activities.
+    """
     cache_key = f"ideas:{compute_request_hash(req.model_dump())}"
     cached = _get_cache(cache_key)
     if isinstance(cached, IdeasResponse):
@@ -88,7 +96,7 @@ def generate_event_ideas(req: IdeasRequest) -> IdeasResponse:
     prompt = build_ideas_prompt(req)
     try:
         result = _call_gemini_ideas_with_retry(client, prompt)
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         result = get_fallback_ideas(req)
 
     _set_cache(cache_key, result)
@@ -103,13 +111,21 @@ def _call_gemini_chat_with_retry(client: genai.Client, prompt: str) -> str:
         try:
             response = client.models.generate_content(model=settings.gemini_model, contents=prompt)
             return sanitize_raw_text(response.text or "", 600)
-        except Exception as err:
+        except Exception as err:  # pylint: disable=broad-exception-caught
             last_err = err
     raise last_err or RuntimeError("Gemini chat failed")
 
 
 def refine_plan_chat(plan_context: str, question: str) -> ChatRefineResponse:
-    """Refine event plan conversationally with length limits and 1 retry."""
+    """Refine event plan conversationally with length limits and 1 retry.
+
+    Args:
+        plan_context: Summary string describing current event parameters and budget.
+        question: User query or prompt for plan refinement.
+
+    Returns:
+        ChatRefineResponse containing sanitized assistant reply and source tag.
+    """
     clean_q = sanitize_raw_text(question, max_length=300)
     cache_key = f"chat:{compute_request_hash({'ctx': plan_context, 'q': clean_q})}"
     cached = _get_cache(cache_key)
@@ -126,7 +142,7 @@ def refine_plan_chat(plan_context: str, question: str) -> ChatRefineResponse:
     try:
         reply_text = _call_gemini_chat_with_retry(client, prompt)
         result = ChatRefineResponse(reply=reply_text, source="ai")
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         result = get_fallback_chat(plan_context, clean_q)
 
     _set_cache(cache_key, result)
