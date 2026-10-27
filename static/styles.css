@@ -18,8 +18,9 @@
   --text-muted: #475569;      /* 5.5:1 on white */
   --text-inverse: #ffffff;
 
-  --primary: #2563eb;         /* Accessible accent */
+  --primary: #2563eb;         /* Accessible accent (5.7:1 with white text) */
   --primary-hover: #1d4ed8;
+  --primary-text: #ffffff;
   --success: #15803d;         /* Accessible green */
   --warning-bg: #fef3c7;
   --warning-text: #92400e;    /* 5.1:1 on amber */
@@ -37,6 +38,12 @@
   --radius-lg: 12px;
 }
 
+/* Accessible high-contrast placeholder */
+::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
 /* User & System Dark Mode */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -52,8 +59,9 @@
     --text-muted: #cbd5e1;    /* 9.4:1 on canvas */
     --text-inverse: #0f172a;
 
-    --primary: #3b82f6;
-    --primary-hover: #60a5fa;
+    --primary: #2563eb;       /* 5.7:1 with white text in dark mode */
+    --primary-hover: #3b82f6;
+    --primary-text: #ffffff;
     --success: #22c55e;
     --warning-bg: #451a03;
     --warning-text: #fde68a;
@@ -82,8 +90,9 @@
   --text-muted: #cbd5e1;
   --text-inverse: #0f172a;
 
-  --primary: #3b82f6;
-  --primary-hover: #60a5fa;
+  --primary: #2563eb;
+  --primary-hover: #3b82f6;
+  --primary-text: #ffffff;
   --success: #22c55e;
   --warning-bg: #451a03;
   --warning-text: #fde68a;
@@ -199,8 +208,9 @@ body {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  min-height: 40px;
+  min-height: 44px;
   text-decoration: none;
 }
 .btn:hover {
@@ -208,16 +218,16 @@ body {
 }
 .btn-primary {
   background-color: var(--primary);
-  color: #ffffff;
+  color: var(--primary-text);
   border-color: var(--primary);
 }
 .btn-primary:hover {
   background-color: var(--primary-hover);
 }
 .btn-sm {
-  padding: 4px 10px;
+  padding: 6px 12px;
   font-size: 0.85rem;
-  min-height: 32px;
+  min-height: 40px;
 }
 
 /* Layout */
@@ -311,6 +321,10 @@ label {
 .form-control:focus {
   border-color: var(--border-focus);
 }
+.form-control[aria-invalid="true"] {
+  border-color: var(--danger);
+  outline: 2px solid var(--danger);
+}
 
 .form-row {
   display: grid;
@@ -353,10 +367,13 @@ label {
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-muted);
-  padding: 10px 14px;
+  padding: 10px 16px;
+  min-height: 44px;
   border-bottom: 3px solid transparent;
   cursor: pointer;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
 }
 .tab-btn:hover {
   color: var(--text-main);
@@ -372,6 +389,11 @@ label {
 }
 .tab-content.active {
   display: block;
+}
+.tab-content:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
 }
 
 /* Status announcement */
@@ -401,11 +423,22 @@ label {
   margin-bottom: 6px;
 }
 
-/* Accessible Budget Table & Bar Chart */
+/* Accessible Budget Table Container & Bar Chart */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-sm);
+  margin-bottom: 24px;
+}
+.table-responsive:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
 .budget-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 24px;
 }
 .budget-table th,
 .budget-table td {
@@ -476,14 +509,14 @@ label {
 }
 .check-item {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
   margin-top: 8px;
+  min-height: 44px;
 }
 .check-box {
-  width: 20px;
-  height: 20px;
-  margin-top: 2px;
+  width: 22px;
+  height: 22px;
   cursor: pointer;
 }
 .check-label {
@@ -581,5 +614,19 @@ label {
   .chart-bar-inner {
     background: #555555 !important;
     color: #ffffff !important;
+  }
+}
+
+/* Windows High Contrast / Forced Colors Mode */
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 3px solid Highlight !important;
+    outline-offset: 2px !important;
+  }
+  .tab-btn[aria-selected="true"] {
+    border-bottom: 3px solid Highlight !important;
+  }
+  .badge {
+    border: 2px solid ButtonText !important;
   }
 }

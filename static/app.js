@@ -54,6 +54,9 @@ function createEl(tag, attrs = {}, children = []) {
   for (const [key, val] of Object.entries(attrs)) {
     if (key === "className") {
       elem.className = val;
+    } else if (key === "htmlFor" || key === "for") {
+      elem.setAttribute("for", val);
+      elem.htmlFor = val;
     } else if (key.startsWith("on") && typeof val === "function") {
       elem.addEventListener(key.slice(2).toLowerCase(), val);
     } else if (key === "aria" && typeof val === "object") {
@@ -144,7 +147,13 @@ function renderBudgetTab(budget, container) {
     tbody.appendChild(tr);
   }
   table.appendChild(tbody);
-  container.appendChild(table);
+  const tableWrapper = createEl("div", {
+    className: "table-responsive",
+    tabIndex: 0,
+    role: "region",
+    aria: { label: "Itemized Budget Breakdown Table" },
+  }, [table]);
+  container.appendChild(tableWrapper);
 
   // Accessible Bar Chart (with text values, not relying on color alone)
   const chartHeading = createEl("h3", { style: "font-size: 1.1rem; margin-top: 24px; margin-bottom: 12px;" }, [
@@ -394,16 +403,19 @@ function activateTab(tabKey) {
   });
 
   panels.forEach((p) => {
-    if (p.id === `panel-${tabKey}`) {
+    const isTarget = p.id === `panel-${tabKey}`;
+    if (isTarget) {
       p.classList.add("active");
+      p.removeAttribute("hidden");
     } else {
       p.classList.remove("active");
+      p.setAttribute("hidden", "");
     }
   });
 }
 
 /**
- * ARIA Tabs Keyboard Navigation (Left, Right, Home, End).
+ * ARIA Tabs Keyboard Navigation (Left, Right, Up, Down, Home, End).
  * @param {KeyboardEvent} e 
  */
 function onTabKeydown(e) {
@@ -412,9 +424,9 @@ function onTabKeydown(e) {
   if (curr === -1) return;
 
   let nextIdx = null;
-  if (e.key === "ArrowRight") {
+  if (e.key === "ArrowRight" || e.key === "ArrowDown") {
     nextIdx = (curr + 1) % tabs.length;
-  } else if (e.key === "ArrowLeft") {
+  } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
     nextIdx = (curr - 1 + tabs.length) % tabs.length;
   } else if (e.key === "Home") {
     nextIdx = 0;
@@ -435,6 +447,52 @@ function onTabKeydown(e) {
  */
 async function onPlanSubmit(e) {
   e.preventDefault();
+
+  const dateInput = document.getElementById("event_date");
+  const guestInput = document.getElementById("guest_count");
+  const budgetInput = document.getElementById("total_budget");
+  const errDate = document.getElementById("error-date");
+  const errGuests = document.getElementById("error-guests");
+  const errBudget = document.getElementById("error-budget");
+
+  let hasErrors = false;
+  const selectedDate = new Date(dateInput.value);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (!dateInput.value || selectedDate <= today) {
+    errDate.removeAttribute("hidden");
+    dateInput.setAttribute("aria-invalid", "true");
+    hasErrors = true;
+  } else {
+    errDate.setAttribute("hidden", "");
+    dateInput.setAttribute("aria-invalid", "false");
+  }
+
+  const guests = parseInt(guestInput.value, 10);
+  if (isNaN(guests) || guests < 1 || guests > 2000) {
+    errGuests.removeAttribute("hidden");
+    guestInput.setAttribute("aria-invalid", "true");
+    hasErrors = true;
+  } else {
+    errGuests.setAttribute("hidden", "");
+    guestInput.setAttribute("aria-invalid", "false");
+  }
+
+  const budget = parseFloat(budgetInput.value);
+  if (isNaN(budget) || budget <= 0) {
+    errBudget.removeAttribute("hidden");
+    budgetInput.setAttribute("aria-invalid", "true");
+    hasErrors = true;
+  } else {
+    errBudget.setAttribute("hidden", "");
+    budgetInput.setAttribute("aria-invalid", "false");
+  }
+
+  if (hasErrors) {
+    announceStatus("Please fix the highlighted errors before generating plan.");
+    return;
+  }
 
   const btn = document.getElementById("btn-submit-plan");
   const origText = btn.textContent;

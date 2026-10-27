@@ -6,7 +6,6 @@
   <title>EventCraft AI — Accessible Event Planning Assistant</title>
   <meta name="description" content="Accessible deterministic event planner with GenAI creative assistance for weddings, birthdays, and community festivals.">
   <link rel="stylesheet" href="/static/styles.css">
-  <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
   <!-- Accessible Skip Navigation Link -->
@@ -37,7 +36,7 @@
   </header>
 
   <!-- Main Landmark -->
-  <main id="main-content" class="main-wrapper" role="main">
+  <main id="main-content" class="main-wrapper" role="main" tabindex="-1">
     <div class="planner-layout">
       <!-- Event Parameters Form Panel -->
       <section class="form-panel" aria-labelledby="form-heading">
@@ -58,22 +57,22 @@
 
             <div class="form-group">
               <label for="event_date">Event Date (Must be in future)</label>
-              <input type="date" id="event_date" name="event_date" class="form-control" required aria-describedby="date-help error-date">
+              <input type="date" id="event_date" name="event_date" class="form-control" required aria-required="true" aria-invalid="false" aria-describedby="date-help error-date">
               <p id="date-help" class="input-desc">Used to calculate backward-scheduled milestones.</p>
-              <p id="error-date" class="input-error" role="alert">Please select a valid future date.</p>
+              <p id="error-date" class="input-error" role="alert" hidden>Please select a valid future date.</p>
             </div>
 
             <div class="form-row">
               <div class="form-group">
                 <label for="guest_count">Guests (1 - 2000)</label>
-                <input type="number" id="guest_count" name="guest_count" class="form-control" min="1" max="2000" value="80" required aria-describedby="error-guests">
-                <p id="error-guests" class="input-error" role="alert">Guest count must be between 1 and 2000.</p>
+                <input type="number" id="guest_count" name="guest_count" class="form-control" min="1" max="2000" value="80" required aria-required="true" aria-invalid="false" aria-describedby="error-guests">
+                <p id="error-guests" class="input-error" role="alert" hidden>Guest count must be between 1 and 2000.</p>
               </div>
 
               <div class="form-group">
                 <label for="total_budget">Total Budget ($)</label>
-                <input type="number" id="total_budget" name="total_budget" class="form-control" min="100" step="50" value="25000" required aria-describedby="error-budget">
-                <p id="error-budget" class="input-error" role="alert">Budget must be greater than zero.</p>
+                <input type="number" id="total_budget" name="total_budget" class="form-control" min="100" step="50" value="25000" required aria-required="true" aria-invalid="false" aria-describedby="error-budget">
+                <p id="error-budget" class="input-error" role="alert" hidden>Budget must be greater than zero.</p>
               </div>
             </div>
           </fieldset>
@@ -90,7 +89,8 @@
 
               <div class="form-group">
                 <label for="city">City / Destination</label>
-                <input type="text" id="city" name="city" class="form-control" maxlength="100" value="Carmel-by-the-Sea">
+                <input type="text" id="city" name="city" class="form-control" maxlength="100" value="Carmel-by-the-Sea" aria-describedby="city-desc">
+                <p id="city-desc" class="input-desc">City or region for vendor lead times.</p>
               </div>
             </div>
 
@@ -109,7 +109,8 @@
 
             <div class="form-group">
               <label for="custom_notes">Notes & Special Requests</label>
-              <textarea id="custom_notes" name="custom_notes" class="form-control" rows="2" maxlength="500" placeholder="Dietary notes, timing preferences, etc.">Sunset ceremony with local farm-to-table dining.</textarea>
+              <textarea id="custom_notes" name="custom_notes" class="form-control" rows="2" maxlength="500" placeholder="Dietary notes, timing preferences, etc." aria-describedby="notes-desc">Sunset ceremony with local farm-to-table dining.</textarea>
+              <p id="notes-desc" class="input-desc">Maximum 500 characters.</p>
             </div>
           </fieldset>
 
@@ -135,7 +136,7 @@
 
         <!-- Tab Navigation (Proper ARIA Tabs Pattern) -->
         <div class="tabs-list" role="tablist" aria-label="Plan details tabs">
-          <button type="button" class="tab-btn" role="tab" id="tab-budget" aria-selected="true" aria-controls="panel-budget" data-tab="budget">
+          <button type="button" class="tab-btn" role="tab" id="tab-budget" aria-selected="true" aria-controls="panel-budget" data-tab="budget" tabindex="0">
             💰 Budget
           </button>
           <button type="button" class="tab-btn" role="tab" id="tab-timeline" aria-selected="false" aria-controls="panel-timeline" data-tab="timeline" tabindex="-1">
@@ -153,35 +154,35 @@
         </div>
 
         <!-- Tab Panel 1: Budget (Table + Accessible Bar Chart) -->
-        <div id="panel-budget" class="tab-content active" role="tabpanel" aria-labelledby="tab-budget">
+        <div id="panel-budget" class="tab-content active" role="tabpanel" aria-labelledby="tab-budget" tabindex="0">
           <div id="budget-output">
             <!-- Dynamically populated via app.js -->
           </div>
         </div>
 
         <!-- Tab Panel 2: Timeline -->
-        <div id="panel-timeline" class="tab-content" role="tabpanel" aria-labelledby="tab-timeline">
+        <div id="panel-timeline" class="tab-content" role="tabpanel" aria-labelledby="tab-timeline" tabindex="0" hidden>
           <div id="timeline-output">
             <!-- Dynamically populated via app.js -->
           </div>
         </div>
 
         <!-- Tab Panel 3: Vendor Checklist -->
-        <div id="panel-vendors" class="tab-content" role="tabpanel" aria-labelledby="tab-vendors">
+        <div id="panel-vendors" class="tab-content" role="tabpanel" aria-labelledby="tab-vendors" tabindex="0" hidden>
           <div id="vendors-output">
             <!-- Dynamically populated via app.js -->
           </div>
         </div>
 
         <!-- Tab Panel 4: Ideas -->
-        <div id="panel-ideas" class="tab-content" role="tabpanel" aria-labelledby="tab-ideas">
+        <div id="panel-ideas" class="tab-content" role="tabpanel" aria-labelledby="tab-ideas" tabindex="0" hidden>
           <div id="ideas-output">
             <!-- Dynamically populated via app.js -->
           </div>
         </div>
 
         <!-- Tab Panel 5: Ask the Planner Chat -->
-        <div id="panel-chat" class="tab-content" role="tabpanel" aria-labelledby="tab-chat">
+        <div id="panel-chat" class="tab-content" role="tabpanel" aria-labelledby="tab-chat" tabindex="0" hidden>
           <div class="chat-box">
             <div id="chat-conversation" class="chat-log" role="log" aria-label="Conversation with planner"></div>
             <form id="chat-query-form" style="display: flex; gap: 8px;">
