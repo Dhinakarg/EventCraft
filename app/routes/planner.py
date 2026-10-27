@@ -1,7 +1,9 @@
 """Deterministic event planning routes."""
 
 import uuid
+
 from fastapi import APIRouter
+
 from app.engine.budget import allocate_budget
 from app.engine.checklist import build_event_checklist
 from app.engine.timeline import create_event_timeline

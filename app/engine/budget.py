@@ -1,6 +1,5 @@
 """Pure deterministic budget allocation engine."""
 
-from typing import Dict, List
 from app.schemas import BudgetBreakdown, BudgetItem, EventType
 
 # Base percentage allocations by event type
@@ -33,7 +32,7 @@ _COMMUNITY_WEIGHTS = [
 ]
 
 
-def get_weights_for_event(event_type: EventType) -> List[tuple]:
+def get_weights_for_event(event_type: EventType) -> list[tuple]:
     """Return category allocation tuples for the given event type."""
     if event_type == EventType.WEDDING:
         return _WEDDING_WEIGHTS
@@ -55,7 +54,7 @@ def allocate_budget(
     spendable = total_budget - contingency
     weights = get_weights_for_event(event_type)
 
-    items: List[BudgetItem] = []
+    items: list[BudgetItem] = []
     for cat, pct, priority, desc in weights:
         amount = round(spendable * pct, 2)
         tip = f"Target ~${amount:,.2f} to stay on track."

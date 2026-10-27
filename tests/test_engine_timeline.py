@@ -1,7 +1,12 @@
 """Unit tests for deterministic timeline engine."""
 
 from datetime import date
-from app.engine.timeline import build_day_schedule, build_milestones, create_event_timeline
+
+from app.engine.timeline import (
+    build_day_schedule,
+    build_milestones,
+    create_event_timeline,
+)
 from app.schemas import EventType
 
 

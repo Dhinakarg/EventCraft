@@ -1,6 +1,6 @@
 """Unit tests for deterministic budget engine."""
 
-from app.engine.budget import allocate_budget, calculate_contingency, get_weights_for_event
+from app.engine.budget import allocate_budget, calculate_contingency
 from app.schemas import EventType
 
 

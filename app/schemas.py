@@ -2,8 +2,9 @@
 
 from datetime import date
 from enum import Enum
-from typing import Dict, List, Optional
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
 from app.sanitizer import sanitize_raw_text
 
 
@@ -29,11 +30,11 @@ class EventPlanRequest(BaseModel):
     duration_hours: float = Field(default=5.0, ge=1.0, le=24.0)
     style_preference: str = Field(default="modern", max_length=50)
     location_type: str = Field(default="indoor", max_length=30)
-    custom_notes: Optional[str] = Field(default="", max_length=500)
+    custom_notes: str | None = Field(default="", max_length=500)
 
     @field_validator("event_name", "custom_notes", "style_preference", "location_type")
     @classmethod
-    def sanitize_strings(cls, v: Optional[str]) -> str:
+    def sanitize_strings(cls, v: str | None) -> str:
         """Sanitize control characters and strip whitespace."""
         return sanitize_raw_text(v or "", max_length=500)
 
@@ -55,7 +56,7 @@ class BudgetBreakdown(BaseModel):
     total_budget: float
     per_guest_cost: float
     currency: str = "USD"
-    items: List[BudgetItem]
+    items: list[BudgetItem]
     contingency_fund: float
 
 
@@ -74,14 +75,14 @@ class MilestoneItem(BaseModel):
     timeframe: str
     days_before: int
     title: str
-    action_items: List[str]
+    action_items: list[str]
 
 
 class EventTimeline(BaseModel):
     """Event day schedule and advance milestones."""
 
-    day_schedule: List[TimelineScheduleItem]
-    milestones: List[MilestoneItem]
+    day_schedule: list[TimelineScheduleItem]
+    milestones: list[MilestoneItem]
 
 
 class VendorCategory(BaseModel):
@@ -90,9 +91,9 @@ class VendorCategory(BaseModel):
     category: str
     allocated_budget: float
     estimated_cost_range: str
-    questions_to_ask: List[str]
+    questions_to_ask: list[str]
     booking_lead_time_weeks: int
-    key_deliverables: List[str]
+    key_deliverables: list[str]
 
 
 class ChecklistTask(BaseModel):
@@ -117,8 +118,8 @@ class FullPlanResponse(BaseModel):
     event_date: date
     budget: BudgetBreakdown
     timeline: EventTimeline
-    vendors: List[VendorCategory]
-    checklist: List[ChecklistTask]
+    vendors: list[VendorCategory]
+    checklist: list[ChecklistTask]
 
 
 class CreativePromptRequest(BaseModel):
@@ -131,11 +132,11 @@ class CreativePromptRequest(BaseModel):
     style_preference: str = Field(default="modern", max_length=50)
     topic: str = Field(default="themes", max_length=50)
     guest_count: int = Field(default=50, ge=1, le=10000)
-    additional_context: Optional[str] = Field(default="", max_length=300)
+    additional_context: str | None = Field(default="", max_length=300)
 
     @field_validator("event_name", "topic", "additional_context")
     @classmethod
-    def clean_text(cls, v: Optional[str]) -> str:
+    def clean_text(cls, v: str | None) -> str:
         """Sanitize text input safely."""
         return sanitize_raw_text(v or "", max_length=300)
 
@@ -145,8 +146,8 @@ class CreativeIdeaResponse(BaseModel):
 
     topic: str
     title: str
-    ideas: List[str]
-    decor_suggestions: List[str]
+    ideas: list[str]
+    decor_suggestions: list[str]
     signature_touch: str
     source: str = "ai"
 
@@ -167,12 +168,12 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     """Chat refinement request payload."""
 
-    messages: List[ChatMessage] = Field(..., max_length=20)
-    current_plan: Optional[Dict] = None
+    messages: list[ChatMessage] = Field(..., max_length=20)
+    current_plan: dict | None = None
 
 
 class ChatResponse(BaseModel):
     """Assistant response with optional updated parameters."""
 
     reply: str
-    plan_adjustments: Optional[Dict] = None
+    plan_adjustments: dict | None = None

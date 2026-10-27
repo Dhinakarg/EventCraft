@@ -1,6 +1,7 @@
 """Chat conversation routes for event plan refinement."""
 
 from fastapi import APIRouter
+
 from app.schemas import ChatRequest, ChatResponse
 from app.services.ai_service import refine_plan_with_chat
 

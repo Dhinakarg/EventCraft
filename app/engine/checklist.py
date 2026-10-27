@@ -1,10 +1,10 @@
 """Pure deterministic checklist generation engine."""
 
-from typing import List
+
 from app.schemas import ChecklistTask, EventType
 
 
-def _build_wedding_tasks() -> List[tuple]:
+def _build_wedding_tasks() -> list[tuple]:
     """Return raw tasks for weddings (id, phase, task, priority, deadline)."""
     return [
         ("w1", "Initial Planning", "Determine target budget and maximum guest list", "High", "6-12 Months Out"),
@@ -19,7 +19,7 @@ def _build_wedding_tasks() -> List[tuple]:
     ]
 
 
-def _build_birthday_tasks() -> List[tuple]:
+def _build_birthday_tasks() -> list[tuple]:
     """Return raw tasks for birthdays (id, phase, task, priority, deadline)."""
     return [
         ("b1", "Initial Planning", "Pick theme, color scheme, and guest headcount", "High", "6-8 Weeks Out"),
@@ -32,7 +32,7 @@ def _build_birthday_tasks() -> List[tuple]:
     ]
 
 
-def _build_community_tasks() -> List[tuple]:
+def _build_community_tasks() -> list[tuple]:
     """Return raw tasks for community events (id, phase, task, priority, deadline)."""
     return [
         ("c1", "Permits & Safety", "File municipal park, sound, and road closure permits", "High", "12-16 Weeks Out"),
@@ -45,7 +45,7 @@ def _build_community_tasks() -> List[tuple]:
     ]
 
 
-def build_event_checklist(event_type: EventType) -> List[ChecklistTask]:
+def build_event_checklist(event_type: EventType) -> list[ChecklistTask]:
     """Generate deterministic tasks tailored to the event type."""
     if event_type == EventType.WEDDING:
         raw_items = _build_wedding_tasks()

@@ -1,9 +1,11 @@
 """GenAI integration service using google-genai SDK with safe fallbacks."""
 
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from google import genai
 from google.genai import types
+
 from app.config import get_settings
 from app.sanitizer import mask_sensitive_info, sanitize_raw_text
 from app.schemas import (
@@ -15,7 +17,7 @@ from app.schemas import (
 )
 
 
-def _get_client() -> Optional[genai.Client]:
+def _get_client() -> genai.Client | None:
     """Instantiate Google GenAI client if API key is present."""
     settings = get_settings()
     if not settings.gemini_api_key or not settings.gemini_api_key.strip():
@@ -98,7 +100,7 @@ def _build_fallback_ideas(req: CreativePromptRequest) -> CreativeIdeaResponse:
 
 
 def _build_fallback_chat(
-    messages: List[ChatMessage], current_plan: Optional[Dict[str, Any]]
+    messages: list[ChatMessage], current_plan: dict[str, Any] | None
 ) -> ChatResponse:
     """Provide rule-based conversational refinement when LLM is unavailable."""
     last_msg = messages[-1].content.lower() if messages else ""
@@ -159,7 +161,7 @@ def generate_creative_ideas(req: CreativePromptRequest) -> CreativeIdeaResponse:
 
 
 def refine_plan_with_chat(
-    messages: List[ChatMessage], current_plan: Optional[Dict[str, Any]]
+    messages: list[ChatMessage], current_plan: dict[str, Any] | None
 ) -> ChatResponse:
     """Refine event plan conversationally via Gemini or fallback."""
     client = _get_client()

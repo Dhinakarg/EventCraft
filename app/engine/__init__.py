@@ -7,7 +7,7 @@ from app.engine.vendors import build_vendor_recommendations
 
 __all__ = [
     "allocate_budget",
-    "create_event_timeline",
-    "build_vendor_recommendations",
     "build_event_checklist",
+    "build_vendor_recommendations",
+    "create_event_timeline",
 ]

@@ -1,10 +1,10 @@
 """Pure deterministic vendor breakdown and interview questions engine."""
 
-from typing import List
+
 from app.schemas import BudgetBreakdown, EventType, VendorCategory
 
 
-def _wedding_venue_catering() -> List[dict]:
+def _wedding_venue_catering() -> list[dict]:
     """Return wedding templates for venue and catering."""
     return [
         {
@@ -32,7 +32,7 @@ def _wedding_venue_catering() -> List[dict]:
     ]
 
 
-def _wedding_media_music() -> List[dict]:
+def _wedding_media_music() -> list[dict]:
     """Return wedding templates for photography and music."""
     return [
         {
@@ -60,12 +60,12 @@ def _wedding_media_music() -> List[dict]:
     ]
 
 
-def _get_wedding_vendor_templates() -> List[dict]:
+def _get_wedding_vendor_templates() -> list[dict]:
     """Return raw vendor templates for wedding planning."""
     return _wedding_venue_catering() + _wedding_media_music()
 
 
-def _get_birthday_vendor_templates() -> List[dict]:
+def _get_birthday_vendor_templates() -> list[dict]:
     """Return raw vendor templates for birthday celebrations."""
     return [
         {
@@ -104,7 +104,7 @@ def _get_birthday_vendor_templates() -> List[dict]:
     ]
 
 
-def _get_community_vendor_templates() -> List[dict]:
+def _get_community_vendor_templates() -> list[dict]:
     """Return raw vendor templates for community gatherings."""
     return [
         {
@@ -143,7 +143,7 @@ def _get_community_vendor_templates() -> List[dict]:
     ]
 
 
-def get_vendor_templates(event_type: EventType) -> List[dict]:
+def get_vendor_templates(event_type: EventType) -> list[dict]:
     """Dispatch vendor templates by event type."""
     if event_type == EventType.WEDDING:
         return _get_wedding_vendor_templates()
@@ -154,12 +154,12 @@ def get_vendor_templates(event_type: EventType) -> List[dict]:
 
 def build_vendor_recommendations(
     event_type: EventType, budget: BudgetBreakdown
-) -> List[VendorCategory]:
+) -> list[VendorCategory]:
     """Produce deterministic vendor categories, lead times, and checklists."""
     templates = get_vendor_templates(event_type)
     total_spendable = budget.total_budget - budget.contingency_fund
 
-    results: List[VendorCategory] = []
+    results: list[VendorCategory] = []
     for item in templates:
         target_cost = round(total_spendable * item["pct"], 2)
         low_cost = round(target_cost * 0.85, 2)

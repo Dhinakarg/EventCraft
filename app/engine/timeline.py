@@ -1,7 +1,7 @@
 """Pure deterministic timeline generation engine."""
 
 from datetime import date, datetime, timedelta
-from typing import List
+
 from app.schemas import EventTimeline, EventType, MilestoneItem, TimelineScheduleItem
 
 
@@ -11,7 +11,7 @@ def format_clock_time(base_dt: datetime, offset_hours: float) -> str:
     return target.strftime("%I:%M %p")
 
 
-def _wedding_early_items(base_dt: datetime) -> List[TimelineScheduleItem]:
+def _wedding_early_items(base_dt: datetime) -> list[TimelineScheduleItem]:
     """Generate early ceremony and arrival blocks for wedding."""
     return [
         TimelineScheduleItem(
@@ -35,7 +35,7 @@ def _wedding_early_items(base_dt: datetime) -> List[TimelineScheduleItem]:
     ]
 
 
-def _wedding_reception_items(base_dt: datetime, dur: float) -> List[TimelineScheduleItem]:
+def _wedding_reception_items(base_dt: datetime, dur: float) -> list[TimelineScheduleItem]:
     """Generate reception and evening blocks for wedding."""
     return [
         TimelineScheduleItem(
@@ -65,12 +65,12 @@ def _wedding_reception_items(base_dt: datetime, dur: float) -> List[TimelineSche
     ]
 
 
-def _get_wedding_schedule(base_dt: datetime, dur: float) -> List[TimelineScheduleItem]:
+def _get_wedding_schedule(base_dt: datetime, dur: float) -> list[TimelineScheduleItem]:
     """Generate day-of schedule blocks for weddings."""
     return _wedding_early_items(base_dt) + _wedding_reception_items(base_dt, dur)
 
 
-def _get_birthday_schedule(base_dt: datetime, dur: float) -> List[TimelineScheduleItem]:
+def _get_birthday_schedule(base_dt: datetime, dur: float) -> list[TimelineScheduleItem]:
     """Generate day-of schedule blocks for birthdays."""
     return [
         TimelineScheduleItem(
@@ -112,7 +112,7 @@ def _get_birthday_schedule(base_dt: datetime, dur: float) -> List[TimelineSchedu
     ]
 
 
-def _get_community_schedule(base_dt: datetime, dur: float) -> List[TimelineScheduleItem]:
+def _get_community_schedule(base_dt: datetime, dur: float) -> list[TimelineScheduleItem]:
     """Generate day-of schedule blocks for community events."""
     return [
         TimelineScheduleItem(
@@ -156,7 +156,7 @@ def _get_community_schedule(base_dt: datetime, dur: float) -> List[TimelineSched
 
 def build_day_schedule(
     start_time_str: str, duration_hours: float, event_type: EventType
-) -> List[TimelineScheduleItem]:
+) -> list[TimelineScheduleItem]:
     """Build day-of event schedule based on event type and start time."""
     try:
         parsed_time = datetime.strptime(start_time_str, "%H:%M")
@@ -171,7 +171,7 @@ def build_day_schedule(
     return _get_community_schedule(base_dt, duration_hours)
 
 
-def _early_milestones() -> List[MilestoneItem]:
+def _early_milestones() -> list[MilestoneItem]:
     """Generate milestones for 3 to 12 months out."""
     return [
         MilestoneItem(
@@ -197,7 +197,7 @@ def _early_milestones() -> List[MilestoneItem]:
     ]
 
 
-def _final_milestones() -> List[MilestoneItem]:
+def _final_milestones() -> list[MilestoneItem]:
     """Generate countdown milestones for the final month."""
     return [
         MilestoneItem(
@@ -223,7 +223,7 @@ def _final_milestones() -> List[MilestoneItem]:
     ]
 
 
-def build_milestones(target_date: date) -> List[MilestoneItem]:
+def build_milestones(target_date: date) -> list[MilestoneItem]:
     """Generate countdown planning milestones leading up to the event."""
     return _early_milestones() + _final_milestones()
 

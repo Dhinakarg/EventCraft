@@ -1,6 +1,7 @@
 """Creative AI idea generation routes."""
 
 from fastapi import APIRouter
+
 from app.schemas import CreativeIdeaResponse, CreativePromptRequest
 from app.services.ai_service import generate_creative_ideas
 
