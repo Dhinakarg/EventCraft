@@ -4,18 +4,18 @@
  */
 
 import {
-  generateMasterPlan,
   fetchCreativeIdeas,
+  generateMasterPlan,
   sendChatMessage,
 } from "./api.js";
 import {
-  renderBudget,
-  renderTimeline,
-  renderVendors,
-  renderChecklist,
-  renderCreativeIdeas,
   appendChatMessage,
   el,
+  renderBudget,
+  renderCreativeIdeas,
+  renderTimeline,
+  renderVendors,
+  renderWarnings,
 } from "./dom.js";
 
 // Application State
@@ -25,49 +25,49 @@ const state = {
     {
       role: "assistant",
       content:
-        "Welcome to EventCraft AI! Generate a master plan, or ask me for creative themes, cost optimizations, or schedule advice.",
+        "Welcome to EventCraft AI! Ask me about timeline buffers, vendor vetting, or budget optimization.",
     },
   ],
   isSubmitting: false,
 };
 
-// Preset configurations for instant exploration
+// Preset configurations for instant exploration with future dates
 const PRESETS = {
   wedding: {
     event_type: "wedding",
     event_name: "Eleanor & James Coastal Wedding",
     guest_count: 85,
-    budget_total: 28000,
+    total_budget: 28000,
     event_date: "2027-06-18",
-    start_time: "16:00",
-    duration_hours: 6.0,
-    style_preference: "Coastal Elegance",
-    location_type: "hybrid",
-    custom_notes: "Sunset oceanfront ceremony followed by garden reception.",
+    vibe: "Coastal Elegance",
+    city: "Carmel-by-the-Sea",
+    dietary: ["Vegetarian", "Gluten-Free"],
+    priorities: ["venue", "food"],
+    notes: "Sunset oceanfront ceremony followed by terrace reception with local seafood.",
   },
   birthday: {
     event_type: "birthday",
     event_name: "Maya's 30th Rooftop Glow Party",
     guest_count: 45,
-    budget_total: 4500,
+    total_budget: 4500,
     event_date: "2026-12-05",
-    start_time: "19:00",
-    duration_hours: 5.0,
-    style_preference: "Retro Neon",
-    location_type: "indoor",
-    custom_notes: "Signature cocktails, live DJ, and photobooth.",
+    vibe: "Retro Neon",
+    city: "Austin",
+    dietary: ["Nut-Free"],
+    priorities: ["entertainment", "decor"],
+    notes: "Signature cocktails, live vinyl DJ, and illuminated polaroid photobooth.",
   },
   community: {
     event_type: "community",
     event_name: "Oakridge Neighborhood Harvest Festival",
     guest_count: 400,
-    budget_total: 12000,
+    total_budget: 12000,
     event_date: "2027-10-09",
-    start_time: "10:00",
-    duration_hours: 8.0,
-    style_preference: "Rustic Eco-Friendly",
-    location_type: "outdoor",
-    custom_notes: "Community craft booths, artisan food trucks, youth music stage.",
+    vibe: "Rustic Eco-Friendly",
+    city: "Portland",
+    dietary: ["Vegan", "Halal"],
+    priorities: ["venue", "entertainment"],
+    notes: "Community craft booths, artisan food trucks, youth music stage.",
   },
 };
 
@@ -79,14 +79,12 @@ function applyPreset(data) {
   document.getElementById("event_type").value = data.event_type;
   document.getElementById("event_name").value = data.event_name;
   document.getElementById("guest_count").value = data.guest_count;
-  document.getElementById("budget_total").value = data.budget_total;
-  document.getElementById("budget_range").value = data.budget_total;
+  document.getElementById("budget_total").value = data.total_budget;
+  document.getElementById("budget_range").value = data.total_budget;
   document.getElementById("event_date").value = data.event_date;
-  document.getElementById("start_time").value = data.start_time;
-  document.getElementById("duration_hours").value = data.duration_hours;
-  document.getElementById("style_preference").value = data.style_preference;
-  document.getElementById("location_type").value = data.location_type;
-  document.getElementById("custom_notes").value = data.custom_notes;
+  document.getElementById("vibe").value = data.vibe;
+  document.getElementById("city").value = data.city || "";
+  document.getElementById("custom_notes").value = data.notes;
 
   updateCharCounts();
   updateBudgetPreviews();
@@ -168,17 +166,27 @@ function handleTabKeydown(e) {
  * @returns {Object}
  */
 function getFormData() {
+  const selectedPriorities = [];
+  const prioritySelect = document.getElementById("priorities");
+  if (prioritySelect) {
+    for (const opt of prioritySelect.selectedOptions) {
+      if (opt.value && selectedPriorities.length < 3) {
+        selectedPriorities.push(opt.value);
+      }
+    }
+  }
+
   return {
     event_type: document.getElementById("event_type").value,
-    event_name: document.getElementById("event_name").value.trim(),
-    guest_count: parseInt(document.getElementById("guest_count").value, 10),
-    budget_total: parseFloat(document.getElementById("budget_total").value),
     event_date: document.getElementById("event_date").value,
-    start_time: document.getElementById("start_time").value,
-    duration_hours: parseFloat(document.getElementById("duration_hours").value),
-    style_preference: document.getElementById("style_preference").value.trim(),
-    location_type: document.getElementById("location_type").value,
-    custom_notes: document.getElementById("custom_notes").value.trim(),
+    guest_count: parseInt(document.getElementById("guest_count").value, 10),
+    total_budget: parseFloat(document.getElementById("budget_total").value),
+    currency: "USD",
+    city: document.getElementById("city") ? document.getElementById("city").value.trim() : "",
+    vibe: document.getElementById("vibe") ? document.getElementById("vibe").value.trim() : "Modern",
+    dietary: ["Vegetarian"],
+    priorities: selectedPriorities.length ? selectedPriorities : ["venue", "food"],
+    notes: document.getElementById("custom_notes").value.trim(),
   };
 }
 
@@ -203,17 +211,14 @@ async function onPlanSubmit(e) {
 
     // Render into each tab container
     renderBudget(plan.budget, document.getElementById("budget-container"));
+    renderWarnings(plan.warnings, document.getElementById("budget-container"));
     renderTimeline(plan.timeline, document.getElementById("timeline-container"));
     renderVendors(plan.vendors, document.getElementById("vendors-container"));
-    renderChecklist(plan.checklist, document.getElementById("checklist-container"), () => {
-      // Re-render checklist stats on toggle
-      renderChecklist(state.currentPlan.checklist, document.getElementById("checklist-container"));
-    });
 
     // Update active plan banner
     const planSummary = document.getElementById("plan-summary-badge");
     if (planSummary) {
-      planSummary.textContent = `${plan.event_name} • ${plan.guest_count} Guests • $${plan.total_budget.toLocaleString()}`;
+      planSummary.textContent = `${plan.vibe} ${plan.event_type} • ${plan.guest_count} Guests • $${plan.total_budget.toLocaleString()}`;
     }
 
     activateTab("budget");
@@ -231,8 +236,6 @@ async function onPlanSubmit(e) {
  */
 async function onGenerateIdeas() {
   const btn = document.getElementById("btn-generate-ideas");
-  const topic = document.getElementById("idea-topic").value;
-  const extraContext = document.getElementById("idea-context").value.trim();
   const container = document.getElementById("ideas-output");
 
   const originalText = btn.textContent;
@@ -243,11 +246,11 @@ async function onGenerateIdeas() {
     const formData = getFormData();
     const req = {
       event_type: formData.event_type,
-      event_name: formData.event_name || "Special Celebration",
-      style_preference: formData.style_preference || "Modern",
-      topic: topic,
+      vibe: formData.vibe || "Modern",
+      dietary: formData.dietary || [],
       guest_count: formData.guest_count || 50,
-      additional_context: extraContext,
+      city: formData.city || "",
+      notes: formData.notes || "",
     };
 
     const result = await fetchCreativeIdeas(req);
@@ -278,14 +281,20 @@ async function onSendChat(text) {
   appendChatMessage("user", text.trim(), messagesContainer);
   chatInput.value = "";
 
-  const typingIndicator = el("div", { className: "chat-bubble bubble-assistant", id: "typing-indicator" }, [
-    "Thinking...",
-  ]);
+  const typingIndicator = el(
+    "div",
+    { className: "chat-bubble bubble-assistant", id: "typing-indicator" },
+    ["Thinking..."]
+  );
   messagesContainer.appendChild(typingIndicator);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
+  const ctx = state.currentPlan
+    ? `${state.currentPlan.event_type} for ${state.currentPlan.guest_count} guests with $${state.currentPlan.total_budget} budget`
+    : "General event planning";
+
   try {
-    const response = await sendChatMessage(state.chatHistory, state.currentPlan);
+    const response = await sendChatMessage(ctx, text.trim());
     typingIndicator.remove();
     state.chatHistory.push({ role: "assistant", content: response.reply });
     appendChatMessage("assistant", response.reply, messagesContainer);
@@ -322,8 +331,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Character counters
   const nameInput = document.getElementById("event_name");
   const notesInput = document.getElementById("custom_notes");
-  nameInput.addEventListener("input", updateCharCounts);
-  notesInput.addEventListener("input", updateCharCounts);
+  if (nameInput) nameInput.addEventListener("input", updateCharCounts);
+  if (notesInput) notesInput.addEventListener("input", updateCharCounts);
 
   // Budget slider sync
   const budgetInput = document.getElementById("budget_total");
@@ -354,7 +363,8 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.addEventListener("click", () => activateTab(btn.getAttribute("data-tab")));
   });
-  document.querySelector(".tabs-nav").addEventListener("keydown", handleTabKeydown);
+  const tabList = document.querySelector(".tabs-nav");
+  if (tabList) tabList.addEventListener("keydown", handleTabKeydown);
 
   // Form submit
   document.getElementById("planner-form").addEventListener("submit", onPlanSubmit);

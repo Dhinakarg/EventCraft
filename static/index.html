@@ -111,20 +111,29 @@
               </div>
             </div>
 
-            <!-- Style Preference & Location Type -->
+            <!-- Vibe Aesthetic & City -->
             <div class="form-row">
               <div class="form-group">
-                <label for="style_preference" class="form-label">Aesthetic Style</label>
-                <input type="text" id="style_preference" name="style_preference" class="form-control" maxlength="50" value="Coastal Elegance">
+                <label for="vibe" class="form-label">Aesthetic Vibe</label>
+                <input type="text" id="vibe" name="vibe" class="form-control" maxlength="80" value="Coastal Elegance">
               </div>
               <div class="form-group">
-                <label for="location_type" class="form-label">Venue Type</label>
-                <select id="location_type" name="location_type" class="form-control">
-                  <option value="indoor">Indoor Hall / Lounge</option>
-                  <option value="outdoor">Outdoor Park / Lawn</option>
-                  <option value="hybrid" selected>Hybrid (Indoor + Terrace)</option>
-                </select>
+                <label for="city" class="form-label">City / Destination</label>
+                <input type="text" id="city" name="city" class="form-control" maxlength="100" value="Carmel-by-the-Sea">
               </div>
+            </div>
+
+            <!-- Priorities (Max 3) -->
+            <div class="form-group">
+              <label for="priorities" class="form-label">Top Priorities (Hold Ctrl/Cmd for multiple, max 3)</label>
+              <select id="priorities" name="priorities" class="form-control" multiple size="3">
+                <option value="venue" selected>🏰 Venue & Facility</option>
+                <option value="food" selected>🍽️ Food & Catering</option>
+                <option value="photography">📸 Photography</option>
+                <option value="decor">💐 Decor & Atmosphere</option>
+                <option value="entertainment">🎵 Music & Entertainment</option>
+                <option value="other">✨ Other Essentials</option>
+              </select>
             </div>
 
             <!-- Custom Notes -->

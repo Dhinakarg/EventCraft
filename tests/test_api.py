@@ -1,5 +1,7 @@
 """API integration tests using FastAPI TestClient."""
 
+from datetime import date, timedelta
+
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -17,68 +19,71 @@ def test_health_check() -> None:
 
 
 def test_generate_plan_api() -> None:
-    """Test deterministic full plan generation endpoint."""
+    """Test deterministic full plan generation endpoint with EventRequest."""
+    target_date = (date.today() + timedelta(days=250)).isoformat()
     payload = {
         "event_type": "wedding",
-        "event_name": "Sophia & Liam Wedding",
+        "event_date": target_date,
         "guest_count": 80,
-        "budget_total": 25000.0,
-        "event_date": "2027-08-15",
-        "start_time": "15:30",
-        "duration_hours": 6.0,
-        "style_preference": "rustic chic",
+        "total_budget": 25000.0,
+        "currency": "USD",
+        "city": "San Francisco",
+        "vibe": "rustic chic",
+        "dietary": ["vegetarian"],
+        "priorities": ["venue", "food"],
+        "notes": "Outdoor garden reception",
     }
     response = client.post("/api/plan/generate", json=payload)
     assert response.status_code == 200
     data = response.json()
-    assert data["event_name"] == "Sophia & Liam Wedding"
-    assert data["budget"]["total_budget"] == 25000.0
+    assert data["event_type"] == "wedding"
+    assert data["total_budget"] == 25000.0
     assert len(data["budget"]["items"]) > 0
-    assert len(data["timeline"]["day_schedule"]) > 0
+    assert len(data["timeline"]["tasks"]) > 0
     assert len(data["vendors"]) > 0
-    assert len(data["checklist"]) > 0
 
 
 def test_budget_recalculation_api() -> None:
     """Test budget-only endpoint."""
+    target_date = (date.today() + timedelta(days=60)).isoformat()
     payload = {
         "event_type": "birthday",
-        "event_name": "Marcus 30th Birthday",
+        "event_date": target_date,
         "guest_count": 40,
-        "budget_total": 4000.0,
-        "event_date": "2026-11-20",
+        "total_budget": 4000.0,
+        "currency": "USD",
+        "vibe": "glow in the dark",
     }
     response = client.post("/api/plan/budget", json=payload)
     assert response.status_code == 200
     data = response.json()
     assert data["total_budget"] == 4000.0
     assert data["per_guest_cost"] == 100.0
+    assert data["is_feasible"] is True
 
 
 def test_ai_ideas_api() -> None:
     """Test creative ideas generation endpoint."""
     payload = {
         "event_type": "birthday",
-        "event_name": "Maya's 10th Birthday",
-        "style_preference": "space galaxy",
-        "topic": "themes",
+        "vibe": "space galaxy",
+        "dietary": ["nut-free"],
         "guest_count": 25,
+        "city": "Seattle",
     }
     response = client.post("/api/ai/ideas", json=payload)
     assert response.status_code == 200
     data = response.json()
-    assert len(data["ideas"]) >= 3
-    assert len(data["decor_suggestions"]) >= 2
-    assert "signature_touch" in data
+    assert len(data["themes"]) == 3
+    assert len(data["menu_ideas"]) >= 1
+    assert "source" in data
 
 
 def test_ai_chat_api() -> None:
     """Test chat refinement endpoint."""
     payload = {
-        "messages": [
-            {"role": "user", "content": "How can I reduce catering costs for 100 people?"}
-        ],
-        "current_plan": {"event_name": "Community Fair"},
+        "plan_context": "Wedding for 100 guests in modern style with $20k budget",
+        "question": "How can I reduce catering costs for 100 people?",
     }
     response = client.post("/api/ai/chat", json=payload)
     assert response.status_code == 200

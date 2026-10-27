@@ -1,78 +1,99 @@
-"""Pure deterministic budget allocation engine."""
-
-from app.schemas import BudgetBreakdown, BudgetItem, EventType
-
-# Base percentage allocations by event type
-_WEDDING_WEIGHTS = [
-    ("Venue & Rentals", 0.40, "High", "Primary venue space, tables, chairs, lighting"),
-    ("Catering & Bar", 0.25, "High", "Full dinner, cocktail hour, beverages, service staff"),
-    ("Photography & Video", 0.12, "Medium", "Ceremony & reception photo/videography coverage"),
-    ("Decor & Florals", 0.08, "Medium", "Centerpieces, bouquet, ceremony arch, ambient styling"),
-    ("Music & Entertainment", 0.07, "Medium", "DJ or live band, sound equipment, emcee"),
-    ("Attire & Beauty", 0.04, "Medium", "Hair, makeup, wardrobe accessories"),
-    ("Stationery & Favors", 0.04, "Low", "Invitations, signage, personalized guest favors"),
-]
-
-_BIRTHDAY_WEIGHTS = [
-    ("Venue & Space", 0.30, "High", "Party room, outdoor pavilion, or private dining lounge"),
-    ("Food & Beverages", 0.35, "High", "Buffet or plated dining, specialty cake, drinks"),
-    ("Entertainment & Games", 0.15, "High", "DJ, magician, photobooth, arcade or live host"),
-    ("Theme Decor & Balloons", 0.10, "Medium", "Backdrops, balloon garlands, tableware"),
-    ("Photography", 0.05, "Low", "Event photos and candids"),
-    ("Favors & Goodie Bags", 0.05, "Low", "Party favor boxes, guest memorabilia"),
-]
-
-_COMMUNITY_WEIGHTS = [
-    ("Permits & Venue", 0.25, "High", "Park permits, hall rental, sanitation facilities"),
-    ("Sound & Stage Production", 0.25, "High", "PA systems, staging, microphones, generators"),
-    ("Refreshments & Hydration", 0.25, "High", "Water stations, community snacks, meal boxes"),
-    ("Signage & Accessibility", 0.10, "Medium", "Directional banners, ramps, safety signage"),
-    ("Activities & Materials", 0.10, "Medium", "Workshop supplies, volunteer kits, games"),
-    ("Emergency & Clean-up", 0.05, "Low", "First aid, trash receptacles, volunteer cleanup"),
-]
+"""Pure deterministic budget allocation and feasibility engine."""
 
 
-def get_weights_for_event(event_type: EventType) -> list[tuple]:
-    """Return category allocation tuples for the given event type."""
-    if event_type == EventType.WEDDING:
-        return _WEDDING_WEIGHTS
-    if event_type == EventType.BIRTHDAY:
-        return _BIRTHDAY_WEIGHTS
-    return _COMMUNITY_WEIGHTS
+from app.engine.profiles import (
+    get_budget_profile,
+    get_min_per_guest_threshold,
+)
+from app.models import BudgetItem, BudgetResponse, EventRequest, EventType
 
 
-def calculate_contingency(total_budget: float, rate: float = 0.05) -> float:
-    """Calculate contingency buffer from total budget."""
-    return round(total_budget * rate, 2)
+def _calculate_shifted_weights(
+    profile: list[tuple[str, float, str, str]],
+    priorities: list[str],
+    contingency_rate: float,
+) -> dict[str, float]:
+    """Shift category weights based on user priorities and renormalize to 100%."""
+    non_contingency = [item for item in profile if item[2] != "contingency"]
+    target_non_contingency_sum = 100.0 - contingency_rate
+
+    raw_weights: dict[str, float] = {}
+    for cat, base_pct, p_key, _ in non_contingency:
+        multiplier = 1.35 if p_key in priorities else 1.0
+        raw_weights[cat] = base_pct * multiplier
+
+    raw_sum = sum(raw_weights.values())
+    normalized: dict[str, float] = {}
+    for cat, val in raw_weights.items():
+        normalized[cat] = (val / raw_sum) * target_non_contingency_sum
+
+    for item in profile:
+        if item[2] == "contingency":
+            normalized[item[0]] = contingency_rate
+    return normalized
 
 
-def allocate_budget(
-    total_budget: float, guest_count: int, event_type: EventType
-) -> BudgetBreakdown:
-    """Deterministically allocate budget across standard categories."""
-    contingency = calculate_contingency(total_budget, 0.05)
-    spendable = total_budget - contingency
-    weights = get_weights_for_event(event_type)
+def _balance_penny_discrepancy(
+    amounts: list[float], total_budget: float
+) -> list[float]:
+    """Adjust largest item by penny difference so sum equals total_budget exactly."""
+    current_sum = round(sum(amounts), 2)
+    diff = round(total_budget - current_sum, 2)
+    if diff != 0.0 and amounts:
+        max_idx = amounts.index(max(amounts))
+        amounts[max_idx] = round(amounts[max_idx] + diff, 2)
+    return amounts
+
+
+def _check_feasibility(
+    event_type: EventType, total_budget: float, guest_count: int
+) -> tuple[bool, list[str]]:
+    """Determine financial feasibility and offer concrete suggestions if underfunded."""
+    per_guest = round(total_budget / max(guest_count, 1), 2)
+    min_thresh = get_min_per_guest_threshold(event_type)
+    if per_guest >= min_thresh:
+        return True, ["Budget is healthy and realistic for the projected guest count."]
+
+    suggestions = [
+        f"Budget alert: Per-guest cost (${per_guest:,.2f}) is below the recommended minimum (${min_thresh:,.2f}).",
+        "Suggestion: Reduce guest count to comfortably preserve dining and venue standards.",
+        "Suggestion: Shorten event duration or select off-peak weekday/Sunday time slots.",
+        "Suggestion: Adopt DIY floral and table decor to maximize hospitality and catering funds.",
+    ]
+    return False, suggestions
+
+
+def allocate_event_budget(req: EventRequest, contingency_rate: float = 8.0) -> BudgetResponse:
+    """Allocate budget deterministically with priority weighting and exact balancing."""
+    contingency_rate = max(5.0, min(10.0, contingency_rate))
+    profile = get_budget_profile(req.event_type)
+    weights = _calculate_shifted_weights(profile, req.priorities, contingency_rate)
+
+    raw_amounts = [round(req.total_budget * (weights[item[0]] / 100.0), 2) for item in profile]
+    balanced_amounts = _balance_penny_discrepancy(raw_amounts, req.total_budget)
 
     items: list[BudgetItem] = []
-    for cat, pct, priority, desc in weights:
-        amount = round(spendable * pct, 2)
-        tip = f"Target ~${amount:,.2f} to stay on track."
-        items.append(
-            BudgetItem(
-                category=cat,
-                percentage=round(pct * 100, 1),
-                allocated_amount=amount,
-                description=desc,
-                priority=priority,
-                tips=tip,
-            )
-        )
+    contingency_fund = 0.0
+    for idx, (cat, _, p_key, desc) in enumerate(profile):
+        amt = balanced_amounts[idx]
+        pct = round((amt / req.total_budget) * 100.0, 2)
+        if p_key == "contingency":
+            contingency_fund = amt
+        priority_label = "High" if p_key in req.priorities else "Medium"
+        tip = f"Target ~{req.currency} {amt:,.2f} ({pct}%)."
+        items.append(BudgetItem(
+            category=cat, percentage=pct, allocated_amount=amt,
+            description=desc, priority=priority_label, tips=tip
+        ))
 
-    per_guest = round(total_budget / max(guest_count, 1), 2)
-    return BudgetBreakdown(
-        total_budget=round(total_budget, 2),
-        per_guest_cost=per_guest,
+    is_feasible, notes = _check_feasibility(req.event_type, req.total_budget, req.guest_count)
+    return BudgetResponse(
+        total_budget=round(req.total_budget, 2),
+        per_guest_cost=round(req.total_budget / req.guest_count, 2),
+        currency=req.currency,
+        contingency_fund=contingency_fund,
+        contingency_percentage=contingency_rate,
+        is_feasible=is_feasible,
+        feasibility_notes=notes,
         items=items,
-        contingency_fund=contingency,
     )

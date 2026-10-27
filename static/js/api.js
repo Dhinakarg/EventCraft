@@ -72,15 +72,15 @@ export async function fetchCreativeIdeas(ideaRequest) {
 
 /**
  * Send chat message to conversational copilot.
- * @param {Array} messages 
- * @param {Object} currentPlan 
+ * @param {string} planContext 
+ * @param {string} question 
  * @returns {Promise<Object>}
  */
-export async function sendChatMessage(messages, currentPlan) {
+export async function sendChatMessage(planContext, question) {
   const res = await fetch(`${BASE_URL}/api/ai/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages, current_plan: currentPlan }),
+    body: JSON.stringify({ plan_context: planContext, question: question }),
   });
   return handleResponse(res);
 }

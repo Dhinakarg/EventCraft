@@ -1,179 +1,159 @@
-"""Pure deterministic vendor breakdown and interview questions engine."""
+"""Pure deterministic vendor checklist and booking deadline engine."""
+
+from datetime import date, timedelta
+
+from app.models import BudgetResponse, EventRequest, EventType, VendorChecklistItem
 
 
-from app.schemas import BudgetBreakdown, EventType, VendorCategory
-
-
-def _wedding_venue_catering() -> list[dict]:
-    """Return wedding templates for venue and catering."""
+def _wedding_vendor_specs() -> list[tuple[str, int, list[str]]]:
+    """Return wedding vendor lead times and essential interview questions."""
     return [
-        {
-            "category": "Venue & Facility",
-            "pct": 0.40,
-            "weeks": 40,
-            "deliverables": ["Full day exclusive access", "Tables & chairs", "Onsite manager", "Bridal suite"],
-            "questions": [
-                "What is the noise curfew and cleanup deadline?",
-                "Are we required to use preferred vendors?",
-                "What is the bad weather backup space?",
+        (
+            "Venue & Facility",
+            210,
+            [
+                "What is the noise curfew and teardown deadline?",
+                "Are we required to use exclusive in-house caterers?",
+                "What bad-weather indoor backup room is guaranteed?",
             ],
-        },
-        {
-            "category": "Catering & Bar",
-            "pct": 0.25,
-            "weeks": 24,
-            "deliverables": ["Passed appetizers", "Entree courses", "Bar staff & glassware", "Tasting session"],
-            "questions": [
-                "How do you handle dietary restrictions and allergies?",
-                "Is table service and cake cutting included?",
-                "What is your server-to-guest ratio?",
+        ),
+        (
+            "Catering & Bar",
+            150,
+            [
+                "What is your server-to-guest staffing ratio?",
+                "How do you accommodate dietary and allergy restrictions?",
+                "Are menu tastings, table linens, and tableware included?",
             ],
-        },
+        ),
+        (
+            "Photography & Video",
+            120,
+            [
+                "How many hours of coverage and shooters are included?",
+                "When will preview sneak-peeks and full high-res files be ready?",
+                "Do you provide a full release for personal printing rights?",
+            ],
+        ),
+        (
+            "Entertainment & Music",
+            90,
+            [
+                "Do you provide wireless microphones for speeches?",
+                "Can we submit must-play and do-not-play track lists?",
+                "What backup audio gear do you carry onsite?",
+            ],
+        ),
     ]
 
 
-def _wedding_media_music() -> list[dict]:
-    """Return wedding templates for photography and music."""
+def _birthday_vendor_specs() -> list[tuple[str, int, list[str]]]:
+    """Return birthday vendor lead times and questions."""
     return [
-        {
-            "category": "Photography & Video",
-            "pct": 0.12,
-            "weeks": 30,
-            "deliverables": ["8-hour coverage", "2 shooters", "Edited digital gallery", "Highlight reel"],
-            "questions": [
-                "When will the full gallery and sneak peeks be delivered?",
-                "Have you shot at our chosen venue before?",
-                "Do we receive full personal printing rights?",
+        (
+            "Venue & Space",
+            45,
+            [
+                "Can we bring outside cake, snacks, or special beverages?",
+                "Are adhesive wall decorations and balloon anchors permitted?",
+                "Is AV equipment available for photo slideshows?",
             ],
-        },
-        {
-            "category": "Music & Entertainment",
-            "pct": 0.07,
-            "weeks": 20,
-            "deliverables": ["Ceremony mic setup", "Cocktail hour sound", "Reception emcee & DJ"],
-            "questions": [
-                "Do you take do-not-play lists from the couple?",
-                "What backup audio gear do you bring?",
-                "Will the same person who signs the contract be our emcee?",
+        ),
+        (
+            "Food & Beverages",
+            30,
+            [
+                "Can you craft a custom-themed birthday cake design?",
+                "Do you supply compostable tableware and napkins?",
+                "What is the deadline for final guest count adjustments?",
             ],
-        },
+        ),
+        (
+            "Entertainment & DJ",
+            21,
+            [
+                "What age group and musical genres do you specialize in?",
+                "Can you run interactive party games and announcements?",
+                "Do you provide ambient party lighting packages?",
+            ],
+        ),
     ]
 
 
-def _get_wedding_vendor_templates() -> list[dict]:
-    """Return raw vendor templates for wedding planning."""
-    return _wedding_venue_catering() + _wedding_media_music()
-
-
-def _get_birthday_vendor_templates() -> list[dict]:
-    """Return raw vendor templates for birthday celebrations."""
+def _community_vendor_specs() -> list[tuple[str, int, list[str]]]:
+    """Return community event vendor lead times and questions."""
     return [
-        {
-            "category": "Venue / Lounge",
-            "pct": 0.30,
-            "weeks": 8,
-            "deliverables": ["Private space rental", "AV screen for slideshow", "Setup & teardown buffer"],
-            "questions": [
-                "Can we bring outside cake or snacks?",
-                "Are wall decorations and balloon anchors permitted?",
-                "Is parking included for guests?",
+        (
+            "Permits & Staging",
+            60,
+            [
+                "Is the staging platform certified for weather and load safety?",
+                "Do you provide covered tent canopy structures?",
+                "What is the delivery, installation, and inspection schedule?",
             ],
-        },
-        {
-            "category": "Catering & Custom Cake",
-            "pct": 0.35,
-            "weeks": 4,
-            "deliverables": ["Appetizer or buffet spread", "Custom themed birthday cake", "Beverage bar"],
-            "questions": [
-                "What custom cake flavor and fondant designs can you make?",
-                "Do you provide biodegradable disposable plates and utensils?",
-                "Can you deliver and assemble the cake onsite?",
+        ),
+        (
+            "Sound & Production",
+            45,
+            [
+                "Is audio equipment wind-resistant for outdoor broadcast?",
+                "Do you supply generator power or need dedicated line hookups?",
+                "Will a licensed sound engineer remain stationed during the event?",
             ],
-        },
-        {
-            "category": "Entertainment & DJ",
-            "pct": 0.15,
-            "weeks": 6,
-            "deliverables": ["Music playlist curation", "Lighting package", "Party games moderation"],
-            "questions": [
-                "What age group do you specialize in entertaining?",
-                "Can guests make song requests during the party?",
-                "Do you supply wireless microphones for speeches?",
+        ),
+        (
+            "Refreshments & Food",
+            30,
+            [
+                "Do all participating food vendors hold active health permits?",
+                "Are safe handwashing and cold storage stations required?",
+                "Can you supply eco-friendly bulk water refill stations?",
             ],
-        },
+        ),
     ]
 
 
-def _get_community_vendor_templates() -> list[dict]:
-    """Return raw vendor templates for community gatherings."""
-    return [
-        {
-            "category": "Staging, PA & AV Equipment",
-            "pct": 0.25,
-            "weeks": 12,
-            "deliverables": ["Outdoor sound system", "Staging platform", "Microphones", "Technician on duty"],
-            "questions": [
-                "Is the gear rated for outdoor wind/rain protection?",
-                "Do you supply generators or require grid power hookup?",
-                "Will a sound technician remain onsite during the event?",
-            ],
-        },
-        {
-            "category": "Sanitation & Waste Management",
-            "pct": 0.10,
-            "weeks": 8,
-            "deliverables": ["Portable restrooms", "Handwash stations", "Recycling & trash dumpsters"],
-            "questions": [
-                "How often are units serviced during a multi-hour festival?",
-                "Do you include ADA-compliant accessible restrooms?",
-                "What is the schedule for post-event collection?",
-            ],
-        },
-        {
-            "category": "Community Food Vendors / Trucks",
-            "pct": 0.25,
-            "weeks": 6,
-            "deliverables": ["Diverse food offerings", "Quick service turnaround", "Health permits"],
-            "questions": [
-                "Do all participating trucks have active health inspection certificates?",
-                "What electrical and water hookups do the trucks need?",
-                "Is there a flat fee or revenue share arrangement?",
-            ],
-        },
-    ]
-
-
-def get_vendor_templates(event_type: EventType) -> list[dict]:
-    """Dispatch vendor templates by event type."""
+def _get_vendor_specs(event_type: EventType) -> list[tuple[str, int, list[str]]]:
+    """Dispatch vendor templates by event category."""
     if event_type == EventType.WEDDING:
-        return _get_wedding_vendor_templates()
+        return _wedding_vendor_specs()
     if event_type == EventType.BIRTHDAY:
-        return _get_birthday_vendor_templates()
-    return _get_community_vendor_templates()
+        return _birthday_vendor_specs()
+    return _community_vendor_specs()
 
 
-def build_vendor_recommendations(
-    event_type: EventType, budget: BudgetBreakdown
-) -> list[VendorCategory]:
-    """Produce deterministic vendor categories, lead times, and checklists."""
-    templates = get_vendor_templates(event_type)
-    total_spendable = budget.total_budget - budget.contingency_fund
+def build_vendor_checklist(
+    req: EventRequest, budget: BudgetResponse
+) -> list[VendorChecklistItem]:
+    """Build vendor checklist with budget caps, booking deadlines, and questions."""
+    today = date.today()
+    specs = _get_vendor_specs(req.event_type)
 
-    results: list[VendorCategory] = []
-    for item in templates:
-        target_cost = round(total_spendable * item["pct"], 2)
-        low_cost = round(target_cost * 0.85, 2)
-        high_cost = round(target_cost * 1.15, 2)
-        range_str = f"${low_cost:,.2f} - ${high_cost:,.2f}"
+    cat_budgets: dict[str, float] = {
+        item.category.lower(): item.allocated_amount for item in budget.items
+    }
 
-        results.append(
-            VendorCategory(
-                category=item["category"],
-                allocated_budget=target_cost,
-                estimated_cost_range=range_str,
-                questions_to_ask=item["questions"],
-                booking_lead_time_weeks=item["weeks"],
-                key_deliverables=item["deliverables"],
+    checklist: list[VendorChecklistItem] = []
+    for cat_name, lead_days, questions in specs:
+        deadline = req.event_date - timedelta(days=lead_days)
+        actual_deadline = max(today, deadline)
+
+        matched_cap = 0.0
+        for b_name, b_amt in cat_budgets.items():
+            if any(k in b_name for k in cat_name.lower().split()):
+                matched_cap = b_amt
+                break
+        if matched_cap == 0.0:
+            matched_cap = round(req.total_budget * 0.15, 2)
+
+        checklist.append(
+            VendorChecklistItem(
+                category=cat_name,
+                budget_cap=matched_cap,
+                booking_deadline=actual_deadline,
+                lead_time_days=lead_days,
+                questions_to_ask=questions,
+                status="todo",
             )
         )
-    return results
+    return checklist

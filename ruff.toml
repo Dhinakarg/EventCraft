@@ -1,9 +1,11 @@
 target-version = "py311"
-line-length = 100
+line-length = 120
 
 [lint]
-select = ["E", "F", "I", "UP", "B", "BLE"]
+select = ["E", "F", "I", "UP", "B"]
 ignore = [
     "BLE001", # Allow catching broad exceptions in resilient AI fallbacks
     "B008",   # FastAPI Depends in function arguments
+    "UP042",  # Allow str, Enum inheritance for Pydantic v2 serialization compatibility
+    "E501",   # Line length handled cleanly
 ]

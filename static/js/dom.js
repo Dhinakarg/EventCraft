@@ -39,14 +39,40 @@ export function el(tag, attrs = {}, children = []) {
 /**
  * Format currency amount safely.
  * @param {number} amount 
+ * @param {string} currency 
  * @returns {string}
  */
-export function formatCurrency(amount) {
+export function formatCurrency(amount, currency = "USD") {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD",
+    currency: currency || "USD",
     maximumFractionDigits: 0,
   }).format(amount || 0);
+}
+
+/**
+ * Render warnings banner if any exist.
+ * @param {Array<string>} warnings 
+ * @param {HTMLElement} container 
+ */
+export function renderWarnings(warnings, container) {
+  if (!warnings || warnings.length === 0) return;
+  const banner = el("div", {
+    className: "metric-card",
+    style: "border-left: 4px solid var(--accent-amber); margin-bottom: 20px;",
+    role: "alert",
+  });
+  banner.appendChild(
+    el("div", { style: "font-weight: 700; color: var(--accent-amber); margin-bottom: 4px;" }, [
+      "⚠️ Planning Alerts & Concrete Recommendations:",
+    ])
+  );
+  const ul = el("ul", { className: "vendor-ul", style: "margin-bottom: 0;" });
+  for (const w of warnings) {
+    ul.appendChild(el("li", {}, [w]));
+  }
+  banner.appendChild(ul);
+  container.prepend(banner);
 }
 
 /**
@@ -60,18 +86,28 @@ export function renderBudget(budget, container) {
   const metricsRow = el("div", { className: "metrics-row" }, [
     el("div", { className: "metric-card" }, [
       el("div", { className: "metric-label" }, ["Total Budget"]),
-      el("div", { className: "metric-value" }, [formatCurrency(budget.total_budget)]),
-      el("div", { className: "metric-sub" }, ["100% Accounted"]),
+      el("div", { className: "metric-value" }, [
+        formatCurrency(budget.total_budget, budget.currency),
+      ]),
+      el("div", { className: "metric-sub" }, ["100% Accounted Exactly"]),
     ]),
     el("div", { className: "metric-card" }, [
       el("div", { className: "metric-label" }, ["Per Guest Spend"]),
-      el("div", { className: "metric-value" }, [formatCurrency(budget.per_guest_cost)]),
-      el("div", { className: "metric-sub" }, ["Optimized Allocation"]),
+      el("div", { className: "metric-value" }, [
+        formatCurrency(budget.per_guest_cost, budget.currency),
+      ]),
+      el("div", { className: "metric-sub" }, [
+        budget.is_feasible ? "Feasible Allocation" : "Below Minimum Threshold",
+      ]),
     ]),
     el("div", { className: "metric-card" }, [
-      el("div", { className: "metric-label" }, ["Contingency Buffer (5%)"]),
-      el("div", { className: "metric-value" }, [formatCurrency(budget.contingency_fund)]),
-      el("div", { className: "metric-sub" }, ["Emergency Reserve"]),
+      el("div", { className: "metric-label" }, [
+        `Contingency Buffer (${budget.contingency_percentage}%)`,
+      ]),
+      el("div", { className: "metric-value" }, [
+        formatCurrency(budget.contingency_fund, budget.currency),
+      ]),
+      el("div", { className: "metric-sub" }, ["Protected Emergency Reserve"]),
     ]),
   ]);
 
@@ -82,7 +118,7 @@ export function renderBudget(budget, container) {
       el("div", { className: "item-top" }, [
         el("span", { className: "item-name" }, [item.category]),
         el("span", { className: "item-amount" }, [
-          `${formatCurrency(item.allocated_amount)} (${item.percentage}%)`,
+          `${formatCurrency(item.allocated_amount, budget.currency)} (${item.percentage}%)`,
         ]),
       ]),
       el("div", { className: "item-bar-bg" }, [
@@ -102,55 +138,54 @@ export function renderBudget(budget, container) {
 }
 
 /**
- * Render timeline run of show and advance milestones.
+ * Render backward-scheduled timeline tasks and rush alerts.
  * @param {Object} timeline 
  * @param {HTMLElement} container 
  */
 export function renderTimeline(timeline, container) {
   container.replaceChildren();
 
-  const hSchedule = el("h3", { className: "card-title" }, ["📅 Day-Of Event Schedule"]);
+  if (timeline.rush_warning) {
+    const rushAlert = el("div", {
+      className: "metric-card",
+      style: "border-left: 4px solid var(--accent-rose); margin-bottom: 20px;",
+      role: "alert",
+    }, [
+      el("div", { style: "font-weight: 700; color: #fda4af; margin-bottom: 4px;" }, [
+        "🚨 Rush Timeline Plan:",
+      ]),
+      el("p", { className: "item-desc" }, [timeline.rush_warning]),
+    ]);
+    container.appendChild(rushAlert);
+  }
+
+  const hSchedule = el("h3", { className: "card-title" }, [
+    `📅 Backward-Scheduled Tasks (${timeline.lead_time_days} Days Lead Time)`,
+  ]);
   const scheduleList = el("div", { className: "timeline-list" });
 
-  for (const item of timeline.day_schedule) {
+  const tasks = timeline.tasks || [];
+  for (const item of tasks) {
+    const pClass = item.is_critical ? "priority-high" : "priority-low";
     const entry = el("div", { className: "timeline-entry" }, [
-      el("div", { className: "time-stamp" }, [item.time]),
+      el("div", { className: "time-stamp" }, [
+        `Due: ${item.due_date} (${item.days_before_event}d out)`,
+      ]),
       el("h4", { className: "timeline-title" }, [item.title]),
-      el("p", { className: "item-desc" }, [item.description]),
-      el("span", { className: "responsible-badge" }, [`Lead: ${item.responsible}`]),
+      el("div", { style: "display: flex; gap: 8px; margin-top: 6px;" }, [
+        el("span", { className: "responsible-badge" }, [item.phase]),
+        el("span", { className: `badge-priority ${pClass}` }, [item.priority]),
+      ]),
     ]);
     scheduleList.appendChild(entry);
   }
 
-  const hMilestones = el("h3", { className: "card-title", style: "margin-top: 36px;" }, [
-    "🚩 Planning Countdown Milestones",
-  ]);
-  const milestonesGrid = el("div", { className: "vendor-grid" });
-
-  for (const ms of timeline.milestones) {
-    const ul = el("ul", { className: "vendor-ul" });
-    for (const act of ms.action_items) {
-      ul.appendChild(el("li", {}, [act]));
-    }
-
-    const card = el("div", { className: "vendor-card" }, [
-      el("div", {}, [
-        el("div", { className: "lead-time" }, [`${ms.timeframe} (${ms.days_before} days)`]),
-        el("h4", { className: "vendor-cat" }, [ms.title]),
-      ]),
-      ul,
-    ]);
-    milestonesGrid.appendChild(card);
-  }
-
   container.appendChild(hSchedule);
   container.appendChild(scheduleList);
-  container.appendChild(hMilestones);
-  container.appendChild(milestonesGrid);
 }
 
 /**
- * Render vendor guide and interview questions.
+ * Render vendor guide and checklist.
  * @param {Array} vendors 
  * @param {HTMLElement} container 
  */
@@ -161,26 +196,19 @@ export function renderVendors(vendors, container) {
 
   for (const v of vendors) {
     const qList = el("ul", { className: "vendor-ul" });
-    for (const q of v.questions_to_ask) {
+    for (const q of v.questions_to_ask || []) {
       qList.appendChild(el("li", {}, [q]));
-    }
-
-    const dList = el("ul", { className: "vendor-ul" });
-    for (const d of v.key_deliverables) {
-      dList.appendChild(el("li", {}, [d]));
     }
 
     const card = el("div", { className: "vendor-card" }, [
       el("div", {}, [
         el("div", { className: "vendor-head" }, [
           el("span", { className: "vendor-cat" }, [v.category]),
-          el("span", { className: "vendor-cost" }, [formatCurrency(v.allocated_budget)]),
+          el("span", { className: "vendor-cost" }, [formatCurrency(v.budget_cap)]),
         ]),
         el("div", { className: "lead-time" }, [
-          `Target Window: ${v.estimated_cost_range} | Book ~${v.booking_lead_time_weeks} wks out`,
+          `Book by ${v.booking_deadline} (${v.lead_time_days} days lead) • Status: ${v.status}`,
         ]),
-        el("div", { className: "vendor-subhead" }, ["Key Deliverables:"]),
-        dList,
         el("div", { className: "vendor-subhead" }, ["Essential Interview Questions:"]),
         qList,
       ]),
@@ -192,85 +220,7 @@ export function renderVendors(vendors, container) {
 }
 
 /**
- * Render interactive checklist with completion updates.
- * @param {Array} tasks 
- * @param {HTMLElement} container 
- * @param {Function} onToggle 
- */
-export function renderChecklist(tasks, container, onToggle) {
-  container.replaceChildren();
-
-  const phases = {};
-  for (const t of tasks) {
-    if (!phases[t.phase]) phases[t.phase] = [];
-    phases[t.phase].push(t);
-  }
-
-  const completedCount = tasks.filter((t) => t.completed).length;
-  const progressHeader = el("div", { className: "metric-card", style: "margin-bottom: 20px;" }, [
-    el("div", { className: "metric-label" }, ["Checklist Progress"]),
-    el("div", { className: "metric-value" }, [
-      `${completedCount} of ${tasks.length} Completed`,
-    ]),
-    el("div", { className: "item-bar-bg", style: "margin-top: 8px;" }, [
-      el("div", {
-        className: "item-bar-fill",
-        style: `width: ${tasks.length ? (completedCount / tasks.length) * 100 : 0}%;`,
-      }),
-    ]),
-  ]);
-
-  container.appendChild(progressHeader);
-
-  const groupsContainer = el("div", { className: "checklist-container" });
-
-  for (const [phase, phaseTasks] of Object.entries(phases)) {
-    const groupCard = el("div", { className: "phase-group" });
-    const header = el("div", { className: "phase-title" }, [
-      el("span", {}, [phase]),
-      el("span", { className: "char-count" }, [`${phaseTasks.length} tasks`]),
-    ]);
-    groupCard.appendChild(header);
-
-    for (const t of phaseTasks) {
-      const checkbox = el("input", {
-        type: "checkbox",
-        id: `chk-${t.id}`,
-        className: "task-check",
-        ...(t.completed ? { checked: "checked" } : {}),
-      });
-
-      checkbox.addEventListener("change", () => {
-        t.completed = checkbox.checked;
-        if (onToggle) onToggle();
-      });
-
-      const priorityClass =
-        t.priority.toLowerCase() === "high"
-          ? "priority-high"
-          : t.priority.toLowerCase() === "medium"
-          ? "priority-medium"
-          : "priority-low";
-
-      const itemRow = el("div", { className: "task-item" }, [
-        checkbox,
-        el("label", { htmlFor: `chk-${t.id}`, className: "task-label" }, [
-          el("div", { style: "font-weight: 600;" }, [t.task]),
-          el("div", { className: "char-count" }, [`Deadline: ${t.deadline_description}`]),
-        ]),
-        el("span", { className: `badge-priority ${priorityClass}` }, [t.priority]),
-      ]);
-
-      groupCard.appendChild(itemRow);
-    }
-    groupsContainer.appendChild(groupCard);
-  }
-
-  container.appendChild(groupsContainer);
-}
-
-/**
- * Render creative ideas in a styled results card safely without innerHTML.
+ * Render structured creative ideas (themes, menu, activities, decor, touches).
  * @param {Object} data 
  * @param {HTMLElement} container 
  */
@@ -280,34 +230,60 @@ export function renderCreativeIdeas(data, container) {
   const resultsCard = el("div", { className: "ai-results-card" });
 
   const headerTag = el("div", { className: "ai-header-tag" }, [
-    `✨ Creative Sparks: ${data.topic.toUpperCase()} (${data.source})`,
+    `✨ Creative Sparks (Source: ${data.source.toUpperCase()})`,
   ]);
-  const title = el("h3", { className: "card-title" }, [data.title]);
-
-  const ideasList = el("ul", { className: "vendor-ul" });
-  for (const idea of data.ideas) {
-    ideasList.appendChild(el("li", {}, [idea]));
-  }
-
-  const decorList = el("ul", { className: "vendor-ul" });
-  for (const decor of data.decor_suggestions) {
-    decorList.appendChild(el("li", {}, [decor]));
-  }
-
-  const sigBox = el("div", { className: "signature-box" }, [
-    el("div", { style: "font-weight: 700; color: #a5b4fc; font-size: 0.85rem;" }, [
-      "SIGNATURE WOW MOMENT:",
-    ]),
-    el("div", { style: "margin-top: 4px; font-weight: 600;" }, [data.signature_touch]),
-  ]);
-
   resultsCard.appendChild(headerTag);
-  resultsCard.appendChild(title);
-  resultsCard.appendChild(el("div", { className: "vendor-subhead" }, ["Core Creative Concepts:"]));
-  resultsCard.appendChild(ideasList);
-  resultsCard.appendChild(el("div", { className: "vendor-subhead" }, ["Decor & Atmosphere Highlights:"]));
-  resultsCard.appendChild(decorList);
-  resultsCard.appendChild(sigBox);
+
+  // 3 Themes
+  const themesBlock = el("div", {}, [
+    el("h4", { className: "card-title", style: "font-size: 1.1rem; margin-top: 10px;" }, [
+      "🎨 3 Bespoke Theme Concepts",
+    ]),
+  ]);
+  const themesList = el("ul", { className: "vendor-ul" });
+  for (const t of data.themes || []) {
+    themesList.appendChild(el("li", { style: "font-weight: 600;" }, [t]));
+  }
+  themesBlock.appendChild(themesList);
+  resultsCard.appendChild(themesBlock);
+
+  // Menu Ideas
+  if (data.menu_ideas && data.menu_ideas.length > 0) {
+    resultsCard.appendChild(el("div", { className: "vendor-subhead" }, ["🍽️ Culinary & Beverage Pairings:"]));
+    const menuList = el("ul", { className: "vendor-ul" });
+    for (const m of data.menu_ideas) menuList.appendChild(el("li", {}, [m]));
+    resultsCard.appendChild(menuList);
+  }
+
+  // Activities
+  if (data.activities && data.activities.length > 0) {
+    resultsCard.appendChild(el("div", { className: "vendor-subhead" }, ["🎲 Interactive Activities & Flow:"]));
+    const actList = el("ul", { className: "vendor-ul" });
+    for (const a of data.activities) actList.appendChild(el("li", {}, [a]));
+    resultsCard.appendChild(actList);
+  }
+
+  // Decor Tips
+  if (data.decor_tips && data.decor_tips.length > 0) {
+    resultsCard.appendChild(el("div", { className: "vendor-subhead" }, ["💐 Ambient Decor & Lighting:"]));
+    const decorList = el("ul", { className: "vendor-ul" });
+    for (const d of data.decor_tips) decorList.appendChild(el("li", {}, [d]));
+    resultsCard.appendChild(decorList);
+  }
+
+  // Personal Touches
+  if (data.personal_touches && data.personal_touches.length > 0) {
+    const touchesBox = el("div", { className: "signature-box" });
+    touchesBox.appendChild(
+      el("div", { style: "font-weight: 700; color: #a5b4fc; font-size: 0.85rem;" }, [
+        "MEMORABLE PERSONAL TOUCHES:",
+      ])
+    );
+    for (const pt of data.personal_touches) {
+      touchesBox.appendChild(el("div", { style: "margin-top: 4px;" }, [`• ${pt}`]));
+    }
+    resultsCard.appendChild(touchesBox);
+  }
 
   container.appendChild(resultsCard);
 }
