@@ -182,19 +182,57 @@
         </div>
 
         <form id="event-plan-form" novalidate>
-          <!-- Fieldset 1: Event Essentials -->
+          <!-- Error Summary Alert Box (Receives focus on submit validation error) -->
+          <div id="form-error-summary" class="error-summary-box" role="alert" tabindex="-1" hidden>
+            <div class="error-summary-title">
+              <svg class="icon" aria-hidden="true"><use href="#icon-warning"></use></svg>
+              <span>Please review and correct the errors below</span>
+            </div>
+            <ul id="error-summary-list" class="error-summary-list"></ul>
+          </div>
+
+          <!-- Fieldset 1: The Basics -->
           <fieldset>
-            <legend>Event Essentials</legend>
-            <div class="form-group">
-              <label for="event_type">Event Category</label>
-              <select id="event_type" name="event_type" class="form-control" required aria-describedby="type-desc">
-                <option value="wedding">Wedding</option>
+            <legend>The Basics</legend>
+
+            <!-- Event Type: 3 Selectable Radio Cards -->
+            <div class="form-group" role="radiogroup" aria-labelledby="event-type-label">
+              <span id="event-type-label" class="label-heading">Event Category</span>
+              <!-- Hidden select for full backward compatibility with any queries on #event_type -->
+              <select id="event_type" name="event_type_select" style="display: none;" aria-hidden="true" tabindex="-1">
+                <option value="wedding" selected>Wedding</option>
                 <option value="birthday">Birthday Party</option>
                 <option value="community">Community Festival</option>
               </select>
-              <p id="type-desc" class="input-desc hint">Determines budget allocation and standard lead times.</p>
+
+              <div class="radio-card-group">
+                <label class="radio-card" for="type-wedding">
+                  <input type="radio" id="type-wedding" name="event_type" value="wedding" class="radio-card-input" checked aria-describedby="desc-type-wedding">
+                  <div class="radio-card-content">
+                    <span class="radio-card-title">Wedding</span>
+                    <span id="desc-type-wedding" class="radio-card-desc">Romantic celebration with full timeline and vendor planning.</span>
+                  </div>
+                </label>
+
+                <label class="radio-card" for="type-birthday">
+                  <input type="radio" id="type-birthday" name="event_type" value="birthday" class="radio-card-input" aria-describedby="desc-type-birthday">
+                  <div class="radio-card-content">
+                    <span class="radio-card-title">Birthday</span>
+                    <span id="desc-type-birthday" class="radio-card-desc">Milestone party with custom vibe, games, and entertainment.</span>
+                  </div>
+                </label>
+
+                <label class="radio-card" for="type-community">
+                  <input type="radio" id="type-community" name="event_type" value="community" class="radio-card-input" aria-describedby="desc-type-community">
+                  <div class="radio-card-content">
+                    <span class="radio-card-title">Community</span>
+                    <span id="desc-type-community" class="radio-card-desc">Neighborhood gathering or festival for groups of all sizes.</span>
+                  </div>
+                </label>
+              </div>
             </div>
 
+            <!-- Event Date -->
             <div class="form-group">
               <label for="event_date">Event Date (Must be in future)</label>
               <input type="date" id="event_date" name="event_date" class="form-control" required aria-required="true" aria-invalid="false" aria-describedby="date-help error-date">
@@ -202,6 +240,7 @@
               <p id="error-date" class="input-error" role="alert" hidden>Please select a valid future date.</p>
             </div>
 
+            <!-- Guests & Budget -->
             <div class="form-row field-row">
               <div class="form-group">
                 <label for="guest_count">Guests (1 - 2000)</label>
@@ -215,28 +254,78 @@
                 <p id="error-budget" class="input-error" role="alert" hidden>Budget must be greater than zero.</p>
               </div>
             </div>
+
+            <!-- Live Per-Guest Calculation Preview -->
+            <div id="per-guest-calc" class="per-guest-calc" aria-live="polite">
+              <span class="calc-label" id="per-guest-amount">= $312 per guest</span>
+              <span class="calc-sub">est. spending allocation</span>
+            </div>
           </fieldset>
 
-          <!-- Fieldset 2: Vibe & Location -->
+          <!-- Fieldset 2: Style & Place -->
           <fieldset>
-            <legend>Vibe & Location</legend>
-            <div class="form-row field-row">
-              <div class="form-group">
-                <label for="vibe">Aesthetic Vibe</label>
-                <input type="text" id="vibe" name="vibe" class="form-control" maxlength="80" value="Coastal Elegance" aria-describedby="vibe-desc">
-                <p id="vibe-desc" class="input-desc hint">e.g. Modern Minimalist, Rustic, Boho.</p>
-              </div>
+            <legend>Style & Place</legend>
 
-              <div class="form-group">
-                <label for="city">City / Destination</label>
-                <input type="text" id="city" name="city" class="form-control" maxlength="100" value="Carmel-by-the-Sea" aria-describedby="city-desc">
-                <p id="city-desc" class="input-desc hint">City or region for vendor lead times.</p>
-              </div>
+            <!-- Vibe (Full width, datalist) -->
+            <div class="form-group">
+              <label for="vibe">Aesthetic Vibe</label>
+              <input type="text" id="vibe" name="vibe" class="form-control" list="vibe-suggestions" maxlength="80" value="Coastal Elegance" aria-describedby="vibe-desc">
+              <datalist id="vibe-suggestions">
+                <option value="Modern Minimalist">
+                <option value="Rustic">
+                <option value="Boho">
+                <option value="Coastal Elegant">
+                <option value="Garden Party">
+              </datalist>
+              <p id="vibe-desc" class="input-desc hint">Choose a suggested vibe or type your custom aesthetic.</p>
             </div>
 
+            <!-- City (Full width) -->
             <div class="form-group">
-              <label for="priorities">Top Priorities (Up to 3)</label>
-              <select id="priorities" name="priorities" class="form-control" multiple size="3" aria-describedby="prio-help">
+              <label for="city">City / Destination</label>
+              <input type="text" id="city" name="city" class="form-control" maxlength="100" value="Carmel-by-the-Sea" aria-describedby="city-desc">
+              <p id="city-desc" class="input-desc hint">City or region for vendor lead times.</p>
+            </div>
+          </fieldset>
+
+          <!-- Fieldset 3: Priorities & Needs -->
+          <fieldset>
+            <legend>Priorities & Needs</legend>
+
+            <!-- Priorities Checkbox Chips (Max 3, live counter) -->
+            <div class="form-group">
+              <div class="label-with-counter">
+                <span id="priorities-label" class="label-heading">Top Priorities (Choose up to 3)</span>
+                <span id="priority-counter" class="counter-badge" aria-live="polite">2 of 3 selected</span>
+              </div>
+              <div class="chips-group" id="priorities-chips" role="group" aria-labelledby="priorities-label">
+                <label class="chip-item" for="prio-venue">
+                  <input type="checkbox" id="prio-venue" name="priorities_chip" value="venue" class="chip-input" checked>
+                  <span class="chip-pill">Venue & Space</span>
+                </label>
+                <label class="chip-item" for="prio-food">
+                  <input type="checkbox" id="prio-food" name="priorities_chip" value="food" class="chip-input" checked>
+                  <span class="chip-pill">Food & Catering</span>
+                </label>
+                <label class="chip-item" for="prio-photography">
+                  <input type="checkbox" id="prio-photography" name="priorities_chip" value="photography" class="chip-input">
+                  <span class="chip-pill">Photography</span>
+                </label>
+                <label class="chip-item" for="prio-decor">
+                  <input type="checkbox" id="prio-decor" name="priorities_chip" value="decor" class="chip-input">
+                  <span class="chip-pill">Decor & Atmosphere</span>
+                </label>
+                <label class="chip-item" for="prio-entertainment">
+                  <input type="checkbox" id="prio-entertainment" name="priorities_chip" value="entertainment" class="chip-input">
+                  <span class="chip-pill">Entertainment</span>
+                </label>
+                <label class="chip-item" for="prio-other">
+                  <input type="checkbox" id="prio-other" name="priorities_chip" value="other" class="chip-input">
+                  <span class="chip-pill">Other</span>
+                </label>
+              </div>
+              <!-- Hidden select for complete backward compatibility -->
+              <select id="priorities" name="priorities" class="form-control" multiple size="3" style="display: none;" aria-hidden="true" tabindex="-1">
                 <option value="venue" selected>Venue & Space</option>
                 <option value="food" selected>Food & Catering</option>
                 <option value="photography">Photography</option>
@@ -244,20 +333,62 @@
                 <option value="entertainment">Music & Entertainment</option>
                 <option value="other">Other</option>
               </select>
-              <p id="prio-help" class="input-desc hint">Shifts budget allocation toward your priorities.</p>
+              <p class="input-desc hint">Shifts budget allocation toward your top priorities.</p>
             </div>
 
+            <!-- Dietary Checkbox Chips -->
             <div class="form-group">
-              <label for="custom_notes">Notes & Special Requests</label>
-              <textarea id="custom_notes" name="custom_notes" class="form-control" rows="2" maxlength="500" placeholder="Dietary notes, timing preferences, etc." aria-describedby="notes-desc">Sunset ceremony with local farm-to-table dining.</textarea>
+              <span id="dietary-label" class="label-heading">Dietary Preferences & Allergies</span>
+              <div class="chips-group" id="dietary-chips" role="group" aria-labelledby="dietary-label">
+                <label class="chip-item" for="dietary-veg">
+                  <input type="checkbox" id="dietary-veg" name="dietary" value="Vegetarian" class="chip-input">
+                  <span class="chip-pill">Vegetarian</span>
+                </label>
+                <label class="chip-item" for="dietary-vegan">
+                  <input type="checkbox" id="dietary-vegan" name="dietary" value="Vegan" class="chip-input">
+                  <span class="chip-pill">Vegan</span>
+                </label>
+                <label class="chip-item" for="dietary-gf">
+                  <input type="checkbox" id="dietary-gf" name="dietary" value="Gluten-free" class="chip-input">
+                  <span class="chip-pill">Gluten-free</span>
+                </label>
+                <label class="chip-item" for="dietary-halal">
+                  <input type="checkbox" id="dietary-halal" name="dietary" value="Halal" class="chip-input">
+                  <span class="chip-pill">Halal</span>
+                </label>
+                <label class="chip-item" for="dietary-kosher">
+                  <input type="checkbox" id="dietary-kosher" name="dietary" value="Kosher" class="chip-input">
+                  <span class="chip-pill">Kosher</span>
+                </label>
+                <label class="chip-item" for="dietary-nut">
+                  <input type="checkbox" id="dietary-nut" name="dietary" value="Nut allergy" class="chip-input">
+                  <span class="chip-pill">Nut allergy</span>
+                </label>
+                <label class="chip-item" for="dietary-other">
+                  <input type="checkbox" id="dietary-other" name="dietary" value="Other" class="chip-input">
+                  <span class="chip-pill">Other</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Notes with Live Character Counter -->
+            <div class="form-group">
+              <div class="label-with-counter">
+                <label for="custom_notes">Notes & Special Requests</label>
+                <span id="notes-counter" class="char-counter" aria-live="polite">453 characters left</span>
+              </div>
+              <textarea id="custom_notes" name="custom_notes" class="form-control" rows="3" maxlength="500" placeholder="Dietary notes, timing preferences, etc." aria-describedby="notes-desc notes-counter">Sunset ceremony with local farm-to-table dining.</textarea>
               <p id="notes-desc" class="input-desc hint">Maximum 500 characters.</p>
             </div>
           </fieldset>
 
-          <button type="submit" id="btn-submit-plan" class="btn btn-primary btn-block">
-            <svg class="icon" aria-hidden="true"><use href="#icon-bolt"></use></svg>
-            <span>Generate Plan</span>
-          </button>
+          <!-- Sticky Form Submit Button -->
+          <div class="form-actions-sticky">
+            <button type="submit" id="btn-submit-plan" class="btn btn-primary btn-block">
+              <svg class="icon" aria-hidden="true"><use href="#icon-bolt"></use></svg>
+              <span>Generate Plan</span>
+            </button>
+          </div>
         </form>
       </section>
 

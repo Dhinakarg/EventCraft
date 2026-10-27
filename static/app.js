@@ -512,79 +512,276 @@ function updateMobileFormCollapse(plan) {
 }
 
 /**
- * Submit plan form to POST /api/plan.
+ * Validate a form input inline.
+ * Returns { field, id, message } on error, or null if valid.
+ * @param {string} fieldId
+ * @returns {Object|null}
+ */
+function validateField(fieldId) {
+  if (fieldId === "event_date") {
+    const input = document.getElementById("event_date");
+    const err = document.getElementById("error-date");
+    if (!input || !err) return null;
+    const selectedDate = new Date(input.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (!input.value || isNaN(selectedDate.getTime()) || selectedDate <= today) {
+      err.removeAttribute("hidden");
+      input.setAttribute("aria-invalid", "true");
+      return { field: input, id: "event_date", message: "Event date must be a valid future date." };
+    } else {
+      err.setAttribute("hidden", "");
+      input.setAttribute("aria-invalid", "false");
+      return null;
+    }
+  }
+
+  if (fieldId === "guest_count") {
+    const input = document.getElementById("guest_count");
+    const err = document.getElementById("error-guests");
+    if (!input || !err) return null;
+    const guests = parseInt(input.value, 10);
+
+    if (isNaN(guests) || guests < 1 || guests > 2000) {
+      err.removeAttribute("hidden");
+      input.setAttribute("aria-invalid", "true");
+      return { field: input, id: "guest_count", message: "Guest count must be between 1 and 2,000." };
+    } else {
+      err.setAttribute("hidden", "");
+      input.setAttribute("aria-invalid", "false");
+      return null;
+    }
+  }
+
+  if (fieldId === "total_budget") {
+    const input = document.getElementById("total_budget");
+    const err = document.getElementById("error-budget");
+    if (!input || !err) return null;
+    const budget = parseFloat(input.value);
+
+    if (isNaN(budget) || budget <= 0) {
+      err.removeAttribute("hidden");
+      input.setAttribute("aria-invalid", "true");
+      return { field: input, id: "total_budget", message: "Total budget must be greater than zero." };
+    } else {
+      err.setAttribute("hidden", "");
+      input.setAttribute("aria-invalid", "false");
+      return null;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Update live "= $312 per guest" estimate under guests and budget.
+ */
+function updatePerGuestCalculation() {
+  const guestInput = document.getElementById("guest_count");
+  const budgetInput = document.getElementById("total_budget");
+  const calcAmount = document.getElementById("per-guest-amount");
+  if (!guestInput || !budgetInput || !calcAmount) return;
+
+  const guests = parseInt(guestInput.value, 10);
+  const budget = parseFloat(budgetInput.value);
+
+  if (!isNaN(guests) && guests > 0 && !isNaN(budget) && budget > 0) {
+    const perGuest = Math.round(budget / guests);
+    calcAmount.textContent = `= $${perGuest.toLocaleString()} per guest`;
+  } else {
+    calcAmount.textContent = "= -- per guest";
+  }
+}
+
+/**
+ * Update live character counter for notes textarea (500 max).
+ */
+function updateNotesCounter() {
+  const notesArea = document.getElementById("custom_notes");
+  const counter = document.getElementById("notes-counter");
+  if (!notesArea || !counter) return;
+
+  const max = 500;
+  const len = notesArea.value.length;
+  const remaining = Math.max(0, max - len);
+  counter.textContent = `${remaining} characters left`;
+  counter.classList.toggle("limit-near", remaining <= 50);
+}
+
+/**
+ * Enforce max 3 priority chips, update live counter in aria-live region, and sync legacy select.
+ */
+function updatePrioritiesState() {
+  const chips = document.querySelectorAll('input[name="priorities_chip"]');
+  const counter = document.getElementById("priority-counter");
+  const legacySelect = document.getElementById("priorities");
+
+  const checkedChips = Array.from(chips).filter((c) => c.checked);
+  const count = checkedChips.length;
+
+  if (counter) {
+    counter.textContent = `${count} of 3 selected`;
+  }
+
+  chips.forEach((chip) => {
+    const itemLabel = chip.closest(".chip-item");
+    if (!chip.checked && count >= 3) {
+      chip.disabled = true;
+      if (itemLabel) itemLabel.classList.add("disabled");
+    } else {
+      chip.disabled = false;
+      if (itemLabel) itemLabel.classList.remove("disabled");
+    }
+  });
+
+  if (legacySelect) {
+    const checkedValues = new Set(checkedChips.map((c) => c.value));
+    Array.from(legacySelect.options).forEach((opt) => {
+      opt.selected = checkedValues.has(opt.value);
+    });
+  }
+}
+
+/**
+ * Bind form interactive listeners: calculation, counters, chips, blur validation, radio sync.
+ */
+function initFormInteractions() {
+  // Live calculation
+  const guestInput = document.getElementById("guest_count");
+  const budgetInput = document.getElementById("total_budget");
+  if (guestInput) {
+    guestInput.addEventListener("input", updatePerGuestCalculation);
+    guestInput.addEventListener("change", updatePerGuestCalculation);
+    guestInput.addEventListener("blur", () => validateField("guest_count"));
+  }
+  if (budgetInput) {
+    budgetInput.addEventListener("input", updatePerGuestCalculation);
+    budgetInput.addEventListener("change", updatePerGuestCalculation);
+    budgetInput.addEventListener("blur", () => validateField("total_budget"));
+  }
+  updatePerGuestCalculation();
+
+  // Notes counter
+  const notesArea = document.getElementById("custom_notes");
+  if (notesArea) {
+    notesArea.addEventListener("input", updateNotesCounter);
+    updateNotesCounter();
+  }
+
+  // Priority chips
+  const prioChips = document.querySelectorAll('input[name="priorities_chip"]');
+  prioChips.forEach((chip) => {
+    chip.addEventListener("change", updatePrioritiesState);
+  });
+  updatePrioritiesState();
+
+  // Event type radios -> sync to hidden select
+  const typeRadios = document.querySelectorAll('input[name="event_type"]');
+  const legacyTypeSelect = document.getElementById("event_type");
+  typeRadios.forEach((radio) => {
+    radio.addEventListener("change", () => {
+      if (radio.checked && legacyTypeSelect) {
+        legacyTypeSelect.value = radio.value;
+      }
+    });
+  });
+
+  // Date blur validation
+  const dateInput = document.getElementById("event_date");
+  if (dateInput) {
+    dateInput.addEventListener("blur", () => validateField("event_date"));
+    dateInput.addEventListener("input", () => {
+      if (dateInput.getAttribute("aria-invalid") === "true") {
+        validateField("event_date");
+      }
+    });
+  }
+}
+
+/**
+ * Submit plan form to POST /api/plan with error summary, loading spinner, and dietary handling.
  * @param {Event} e 
  */
 async function onPlanSubmit(e) {
   e.preventDefault();
 
-  const dateInput = document.getElementById("event_date");
-  const guestInput = document.getElementById("guest_count");
-  const budgetInput = document.getElementById("total_budget");
-  const errDate = document.getElementById("error-date");
-  const errGuests = document.getElementById("error-guests");
-  const errBudget = document.getElementById("error-budget");
+  const errors = [
+    validateField("event_date"),
+    validateField("guest_count"),
+    validateField("total_budget"),
+  ].filter(Boolean);
 
-  let hasErrors = false;
-  const selectedDate = new Date(dateInput.value);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const summaryBox = document.getElementById("form-error-summary");
+  const summaryList = document.getElementById("error-summary-list");
 
-  if (!dateInput.value || selectedDate <= today) {
-    errDate.removeAttribute("hidden");
-    dateInput.setAttribute("aria-invalid", "true");
-    hasErrors = true;
-  } else {
-    errDate.setAttribute("hidden", "");
-    dateInput.setAttribute("aria-invalid", "false");
-  }
-
-  const guests = parseInt(guestInput.value, 10);
-  if (isNaN(guests) || guests < 1 || guests > 2000) {
-    errGuests.removeAttribute("hidden");
-    guestInput.setAttribute("aria-invalid", "true");
-    hasErrors = true;
-  } else {
-    errGuests.setAttribute("hidden", "");
-    guestInput.setAttribute("aria-invalid", "false");
-  }
-
-  const budget = parseFloat(budgetInput.value);
-  if (isNaN(budget) || budget <= 0) {
-    errBudget.removeAttribute("hidden");
-    budgetInput.setAttribute("aria-invalid", "true");
-    hasErrors = true;
-  } else {
-    errBudget.setAttribute("hidden", "");
-    budgetInput.setAttribute("aria-invalid", "false");
-  }
-
-  if (hasErrors) {
-    announceStatus("Please fix the highlighted errors before generating plan.");
+  if (errors.length > 0) {
+    if (summaryList) {
+      summaryList.replaceChildren();
+      errors.forEach((err) => {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.href = `#${err.id}`;
+        a.textContent = err.message;
+        a.addEventListener("click", (evt) => {
+          evt.preventDefault();
+          err.field.focus();
+        });
+        li.appendChild(a);
+        summaryList.appendChild(li);
+      });
+    }
+    if (summaryBox) {
+      summaryBox.removeAttribute("hidden");
+      summaryBox.focus();
+    }
+    announceStatus(`Form submission error: ${errors.length} issue${errors.length > 1 ? "s" : ""} need correction.`);
     return;
   }
 
-  const btn = document.getElementById("btn-submit-plan");
-  btn.replaceChildren(createSvgIcon("spinner", "icon-spin"), " Calculating Master Plan...");
-  btn.disabled = true;
-  announceStatus("Calculating event master plan. Please wait.");
-
-  const priorities = [];
-  const pSelect = document.getElementById("priorities");
-  for (const opt of pSelect.selectedOptions) {
-    if (opt.value && priorities.length < 3) priorities.push(opt.value);
+  if (summaryBox) {
+    summaryBox.setAttribute("hidden", "");
+    if (summaryList) summaryList.replaceChildren();
   }
 
+  const btn = document.getElementById("btn-submit-plan");
+  btn.replaceChildren(createSvgIcon("spinner", "icon-spin"), " Crafting your plan…");
+  btn.disabled = true;
+  announceStatus("Crafting your plan. Please wait.");
+
+  // Gather priorities from checked chips
+  let priorities = [];
+  const checkedChips = document.querySelectorAll('input[name="priorities_chip"]:checked');
+  if (checkedChips.length > 0) {
+    priorities = Array.from(checkedChips).map((c) => c.value).slice(0, 3);
+  } else {
+    const pSelect = document.getElementById("priorities");
+    if (pSelect) {
+      for (const opt of pSelect.selectedOptions) {
+        if (opt.value && priorities.length < 3) priorities.push(opt.value);
+      }
+    }
+  }
+
+  // Gather dietary restrictions from checked dietary chips
+  const dietaryChips = document.querySelectorAll('input[name="dietary"]:checked');
+  const dietary = Array.from(dietaryChips).map((c) => c.value);
+
+  // Gather event type from checked radio
+  const checkedType = document.querySelector('input[name="event_type"]:checked');
+  const eventType = checkedType ? checkedType.value : (document.getElementById("event_type")?.value || "wedding");
+
   const payload = {
-    event_type: document.getElementById("event_type").value,
+    event_type: eventType,
     event_date: document.getElementById("event_date").value,
     guest_count: parseInt(document.getElementById("guest_count").value, 10),
     total_budget: parseFloat(document.getElementById("total_budget").value),
     currency: "USD",
-    vibe: document.getElementById("vibe").value.trim() || "Modern",
-    city: document.getElementById("city").value.trim() || "",
+    vibe: document.getElementById("vibe")?.value.trim() || "Modern",
+    city: document.getElementById("city")?.value.trim() || "",
     priorities: priorities,
-    notes: document.getElementById("custom_notes").value.trim(),
+    dietary: dietary,
+    notes: document.getElementById("custom_notes")?.value.trim() || "",
   };
 
   try {
@@ -773,6 +970,7 @@ function initDefaults() {
 document.addEventListener("DOMContentLoaded", () => {
   initAccessibilityControls();
   initDefaults();
+  initFormInteractions();
 
   // Tabs
   document.querySelectorAll(".tab-btn").forEach((btn) => {
