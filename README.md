@@ -198,6 +198,26 @@ Full accessibility audit and conformance details are in [docs/ACCESSIBILITY.md](
 
 ---
 
+## 📸 Interface & Responsive Showcase
+
+EventCraft AI has been validated across desktop, tablet, and mobile viewports (1440px, 768px, and 375px) with zero horizontal overflow, full keyboard accessibility, and WCAG 2.1 AA contrast compliance. All optimized WebP captures are stored in [docs/screenshots/](file:///d:/Event%20Planner/docs/screenshots/) (< 610 KB total).
+
+| Viewport | State / Tab | Screenshot Reference | Description |
+| :--- | :--- | :--- | :--- |
+| **Desktop (1440px)** | Empty State | [empty-state-1440.webp](file:///d:/Event%20Planner/docs/screenshots/empty-state-1440.webp) | Hero welcoming screen with sample scenario quick-load cards |
+| **Desktop (1440px)** | Filled Form | [filled-form-1440.webp](file:///d:/Event%20Planner/docs/screenshots/filled-form-1440.webp) | 3 fieldsets, radio cards, priority chips, live $/guest calculation |
+| **Desktop (1440px)** | Loading Skeleton | [loading-skeleton-1440.webp](file:///d:/Event%20Planner/docs/screenshots/loading-skeleton-1440.webp) | Accessible `aria-busy="true"` skeleton placeholders |
+| **Desktop (1440px)** | Budget Breakdown | [budget-tab-1440.webp](file:///d:/Event%20Planner/docs/screenshots/budget-tab-1440.webp) | Inline SVG donut chart, priority tags, itemized expense table |
+| **Desktop (1440px)** | Milestone Timeline | [timeline-tab-1440.webp](file:///d:/Event%20Planner/docs/screenshots/timeline-tab-1440.webp) | Phased backward milestones, critical/deferred badges, filter toggle |
+| **Desktop (1440px)** | Vendor Checklist | [vendor-tab-1440.webp](file:///d:/Event%20Planner/docs/screenshots/vendor-tab-1440.webp) | Booking status tracker, interactive progress bar, interview prompts |
+| **Desktop (1440px)** | Creative Ideas | [ideas-tab-1440.webp](file:///d:/Event%20Planner/docs/screenshots/ideas-tab-1440.webp) | Palette swatches, decor suggestions, AI/curated themes |
+| **Desktop (1440px)** | Ask the Planner | [chat-tab-1440.webp](file:///d:/Event%20Planner/docs/screenshots/chat-tab-1440.webp) | Conversational assistant with context-aware suggestions |
+| **Tablet (768px)** | Collapsed Form Bar | [collapsed-form-768.webp](file:///d:/Event%20Planner/docs/screenshots/collapsed-form-768.webp) | Single-column summary bar with "Edit details" re-expansion |
+| **Mobile (375px)** | Mobile Empty State | [mobile-empty-375.webp](file:///d:/Event%20Planner/docs/screenshots/mobile-empty-375.webp) | Vertical single-column layout, touch-friendly cards and chips |
+| **Mobile (375px)** | Mobile Plan Summary | [mobile-summary-375.webp](file:///d:/Event%20Planner/docs/screenshots/mobile-summary-375.webp) | Compact summary, horizontal scrolling tablist, 0 horizontal overflow |
+
+---
+
 ## 🚀 How to Run & Test
 
 ### Prerequisites
