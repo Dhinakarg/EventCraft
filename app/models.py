@@ -147,3 +147,4 @@ class PlanResponse(BaseModel):
     timeline: TimelineResponse
     vendors: list[VendorChecklistItem]
     warnings: list[str]
+    ideas: object | None = None
