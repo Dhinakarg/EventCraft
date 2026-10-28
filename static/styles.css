@@ -205,6 +205,10 @@ html[data-font-size="xl"],
   padding: 0;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   font-family: var(--font-sans);
   font-size: var(--font-size-base);
@@ -472,6 +476,10 @@ body {
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-4);
   flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+.form-summary-bar[hidden] {
+  display: none !important;
 }
 .summary-content {
   display: flex;

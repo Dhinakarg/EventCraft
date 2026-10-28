@@ -144,9 +144,13 @@ function initAccessibilityControls() {
       const bar = document.getElementById("form-summary-bar");
       const form = document.getElementById("event-plan-form");
       if (bar) bar.setAttribute("hidden", "");
-      if (form) form.removeAttribute("hidden");
+      if (form) {
+        form.removeAttribute("hidden");
+        form.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
       const first = document.getElementById("event_type");
       if (first) first.focus();
+      announceStatus("Form opened. You can now edit your event details.");
     });
   }
 }
