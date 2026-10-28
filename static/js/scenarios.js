@@ -16,11 +16,9 @@ export function loadScenario(scenarioKey) {
   if (!sc) return;
 
   const radio = document.querySelector(`input[name="event_type"][value="${sc.event_type}"]`);
-  if (radio) {
-    radio.checked = true;
-    const legacySelect = document.getElementById("event_type");
-    if (legacySelect) legacySelect.value = sc.event_type;
-  }
+  if (radio) radio.checked = true;
+  const typeSelect = document.getElementById("event_type");
+  if (typeSelect) typeSelect.value = sc.event_type;
 
   const dateInput = document.getElementById("event_date");
   if (dateInput) {

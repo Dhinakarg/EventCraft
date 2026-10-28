@@ -152,14 +152,14 @@ function initAccessibilityControls() {
 }
 
 /**
- * Set default event date in future.
+ * Set minimum selectable event date to tomorrow.
  */
 function initDefaults() {
   const dateInput = document.getElementById("event_date");
-  if (dateInput && !dateInput.value) {
-    const future = new Date();
-    future.setDate(future.getDate() + 180);
-    dateInput.value = future.toISOString().split("T")[0];
+  if (dateInput) {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    dateInput.min = tomorrow.toISOString().split("T")[0];
   }
 }
 

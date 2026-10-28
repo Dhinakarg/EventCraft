@@ -232,41 +232,15 @@
           <fieldset>
             <legend>The Basics</legend>
 
-            <!-- Event Type: 3 Selectable Radio Cards -->
-            <div class="form-group" role="radiogroup" aria-labelledby="event-type-label">
-              <span id="event-type-label" class="label-heading">Event Category</span>
-              <!-- Hidden select for full backward compatibility with any queries on #event_type -->
-              <select id="event_type" name="event_type_select" style="display: none;" aria-hidden="true" tabindex="-1">
-                <option value="wedding" selected>Wedding</option>
+            <!-- Event Category Dropdown -->
+            <div class="form-group">
+              <label for="event_type">Event Category</label>
+              <select id="event_type" name="event_type" class="form-control" required aria-required="true" aria-describedby="event-type-desc">
+                <option value="wedding" selected>Marriage / Wedding</option>
                 <option value="birthday">Birthday Party</option>
                 <option value="community">Community Festival</option>
               </select>
-
-              <div class="radio-card-group">
-                <label class="radio-card" for="type-wedding">
-                  <input type="radio" id="type-wedding" name="event_type" value="wedding" class="radio-card-input" checked aria-describedby="desc-type-wedding">
-                  <div class="radio-card-content">
-                    <span class="radio-card-title">Wedding</span>
-                    <span id="desc-type-wedding" class="radio-card-desc">Romantic celebration with full timeline and vendor planning.</span>
-                  </div>
-                </label>
-
-                <label class="radio-card" for="type-birthday">
-                  <input type="radio" id="type-birthday" name="event_type" value="birthday" class="radio-card-input" aria-describedby="desc-type-birthday">
-                  <div class="radio-card-content">
-                    <span class="radio-card-title">Birthday</span>
-                    <span id="desc-type-birthday" class="radio-card-desc">Milestone party with custom vibe, games, and entertainment.</span>
-                  </div>
-                </label>
-
-                <label class="radio-card" for="type-community">
-                  <input type="radio" id="type-community" name="event_type" value="community" class="radio-card-input" aria-describedby="desc-type-community">
-                  <div class="radio-card-content">
-                    <span class="radio-card-title">Community</span>
-                    <span id="desc-type-community" class="radio-card-desc">Neighborhood gathering or festival for groups of all sizes.</span>
-                  </div>
-                </label>
-              </div>
+              <p id="event-type-desc" class="input-desc hint">Select your event type for tailored budget allocation and vendor lead times.</p>
             </div>
 
             <!-- Event Date -->
@@ -281,20 +255,20 @@
             <div class="form-row field-row">
               <div class="form-group">
                 <label for="guest_count">Guests (1 - 2000)</label>
-                <input type="number" id="guest_count" name="guest_count" class="form-control" min="1" max="2000" value="80" required aria-required="true" aria-invalid="false" aria-describedby="error-guests">
+                <input type="number" id="guest_count" name="guest_count" class="form-control" min="1" max="2000" placeholder="e.g. 100" required aria-required="true" aria-invalid="false" aria-describedby="error-guests">
                 <p id="error-guests" class="input-error" role="alert" hidden>Guest count must be between 1 and 2000.</p>
               </div>
 
               <div class="form-group">
                 <label for="total_budget">Total Budget (₹)</label>
-                <input type="number" id="total_budget" name="total_budget" class="form-control" min="1000" step="1000" value="500000" required aria-required="true" aria-invalid="false" aria-describedby="error-budget">
+                <input type="number" id="total_budget" name="total_budget" class="form-control" min="1000" step="1000" placeholder="e.g. 500000" required aria-required="true" aria-invalid="false" aria-describedby="error-budget">
                 <p id="error-budget" class="input-error" role="alert" hidden>Budget must be greater than zero.</p>
               </div>
             </div>
 
             <!-- Live Per-Guest Calculation Preview -->
             <div id="per-guest-calc" class="per-guest-calc" aria-live="polite">
-              <span class="calc-label" id="per-guest-amount">= ₹6,250 per guest</span>
+              <span class="calc-label" id="per-guest-amount">= -- per guest</span>
               <span class="calc-sub">est. spending allocation</span>
             </div>
           </fieldset>
@@ -306,7 +280,7 @@
             <!-- Vibe (Full width, datalist) -->
             <div class="form-group">
               <label for="vibe">Aesthetic Vibe</label>
-              <input type="text" id="vibe" name="vibe" class="form-control" list="vibe-suggestions" maxlength="80" value="Coastal Elegance" aria-describedby="vibe-desc">
+              <input type="text" id="vibe" name="vibe" class="form-control" list="vibe-suggestions" maxlength="80" placeholder="e.g. Modern Minimalist, Rustic" aria-describedby="vibe-desc">
               <datalist id="vibe-suggestions">
                 <option value="Modern Minimalist">
                 <option value="Rustic">
@@ -320,7 +294,7 @@
             <!-- City (Full width) -->
             <div class="form-group">
               <label for="city">City / Destination</label>
-              <input type="text" id="city" name="city" class="form-control" maxlength="100" value="Carmel-by-the-Sea" aria-describedby="city-desc">
+              <input type="text" id="city" name="city" class="form-control" maxlength="100" placeholder="e.g. Bengaluru, Mumbai, Goa" aria-describedby="city-desc">
               <p id="city-desc" class="input-desc hint">City or region for vendor lead times.</p>
             </div>
           </fieldset>
@@ -333,15 +307,15 @@
             <div class="form-group">
               <div class="label-with-counter">
                 <span id="priorities-label" class="label-heading">Top Priorities (Choose up to 3)</span>
-                <span id="priority-counter" class="counter-badge" aria-live="polite">2 of 3 selected</span>
+                <span id="priority-counter" class="counter-badge" aria-live="polite">0 of 3 selected</span>
               </div>
               <div class="chips-group" id="priorities-chips" role="group" aria-labelledby="priorities-label">
                 <label class="chip-item" for="prio-venue">
-                  <input type="checkbox" id="prio-venue" name="priorities_chip" value="venue" class="chip-input" checked>
+                  <input type="checkbox" id="prio-venue" name="priorities_chip" value="venue" class="chip-input">
                   <span class="chip-pill">Venue & Space</span>
                 </label>
                 <label class="chip-item" for="prio-food">
-                  <input type="checkbox" id="prio-food" name="priorities_chip" value="food" class="chip-input" checked>
+                  <input type="checkbox" id="prio-food" name="priorities_chip" value="food" class="chip-input">
                   <span class="chip-pill">Food & Catering</span>
                 </label>
                 <label class="chip-item" for="prio-photography">
@@ -363,8 +337,8 @@
               </div>
               <!-- Hidden select for complete backward compatibility -->
               <select id="priorities" name="priorities" class="form-control" multiple size="3" style="display: none;" aria-hidden="true" tabindex="-1">
-                <option value="venue" selected>Venue & Space</option>
-                <option value="food" selected>Food & Catering</option>
+                <option value="venue">Venue & Space</option>
+                <option value="food">Food & Catering</option>
                 <option value="photography">Photography</option>
                 <option value="decor">Decor & Atmosphere</option>
                 <option value="entertainment">Music & Entertainment</option>
@@ -412,9 +386,9 @@
             <div class="form-group">
               <div class="label-with-counter">
                 <label for="custom_notes">Notes & Special Requests</label>
-                <span id="notes-counter" class="char-counter" aria-live="polite">453 characters left</span>
+                <span id="notes-counter" class="char-counter" aria-live="polite">500 characters left</span>
               </div>
-              <textarea id="custom_notes" name="custom_notes" class="form-control" rows="3" maxlength="500" placeholder="Dietary notes, timing preferences, etc." aria-describedby="notes-desc notes-counter">Sunset ceremony with local farm-to-table dining.</textarea>
+              <textarea id="custom_notes" name="custom_notes" class="form-control" rows="3" maxlength="500" placeholder="Dietary notes, timing preferences, etc." aria-describedby="notes-desc notes-counter"></textarea>
               <p id="notes-desc" class="input-desc hint">Maximum 500 characters.</p>
             </div>
           </fieldset>
@@ -626,6 +600,6 @@
     <p>EventCraft AI • Accessible Planning Engine • WCAG 2.1 AA Compliant • No external dependencies</p>
   </footer>
 
-  <script type="module" src="/static/app.js?v=2.1"></script>
+  <script type="module" src="/static/app.js?v=2.2"></script>
 </body>
 </html>
