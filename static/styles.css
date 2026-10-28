@@ -168,15 +168,24 @@
   --badge-tmpl-text: #334155;
 }
 
-/* User Text Size Controls */
+/* User Text Size Controls (A, A+, A++) */
+html {
+  font-size: 100%;
+}
+html[data-font-size="normal"],
 :root[data-font-size="normal"] {
+  font-size: 100% !important;
   --font-size-base: 1rem;
 }
+html[data-font-size="large"],
 :root[data-font-size="large"] {
-  --font-size-base: 1.125rem; /* 18px */
+  font-size: 115% !important; /* ~18.4px base */
+  --font-size-base: 1.15rem;
 }
+html[data-font-size="xl"],
 :root[data-font-size="xl"] {
-  --font-size-base: 1.25rem;  /* 20px */
+  font-size: 130% !important;  /* ~20.8px base */
+  --font-size-base: 1.3rem;
 }
 
 /* Reduced Motion Override */
@@ -194,10 +203,6 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-}
-
-html {
-  font-size: 100%;
 }
 
 body {

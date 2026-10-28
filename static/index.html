@@ -6,6 +6,20 @@
   <title>EventCraft AI — Accessible Event Planning Assistant</title>
   <meta name="description" content="Accessible deterministic event planner with GenAI creative assistance for weddings, birthdays, and community festivals.">
   <link rel="stylesheet" href="/static/styles.css">
+  <script>
+    (function () {
+      try {
+        var savedTheme = localStorage.getItem("eventcraft_theme");
+        if (savedTheme) {
+          document.documentElement.setAttribute("data-theme", savedTheme);
+        }
+        var savedSize = localStorage.getItem("eventcraft_font_size");
+        if (savedSize) {
+          document.documentElement.setAttribute("data-font-size", savedSize);
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <!-- Inline SVG Icon Sprite (Zero External Dependencies, aria-hidden) -->
