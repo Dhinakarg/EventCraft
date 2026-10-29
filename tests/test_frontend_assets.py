@@ -25,6 +25,9 @@ def test_index_html_accessibility_and_seo() -> None:
     assert "<legend>" in content
     assert 'role="tablist"' in content
     assert 'aria-live="polite"' in content
+    assert 'autocomplete="address-level2"' in content
+    base_css = (STATIC_DIR / "css" / "base.css").read_text(encoding="utf-8")
+    assert "@media (forced-colors: active)" in base_css
 
 
 def test_no_inner_html_in_frontend_js() -> None:

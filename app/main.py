@@ -73,8 +73,23 @@ def create_app() -> FastAPI:
     application.add_exception_handler(Exception, generic_exception_handler)
 
     # Core health & index endpoints
-    application.add_api_route("/health", health_endpoint, methods=["GET"])
-    application.add_api_route("/", serve_index, methods=["GET"])
+    application.add_api_route(
+        "/health",
+        health_endpoint,
+        methods=["GET"],
+        response_model=HealthResponse,
+        summary="Service health check",
+        description="Return operational health status, service identifier, and active Gemini AI model.",
+        response_description="Operational health payload with service status and model information.",
+    )
+    application.add_api_route(
+        "/",
+        serve_index,
+        methods=["GET"],
+        summary="Serve web application shell",
+        description="Serve the primary single-page application HTML interface.",
+        response_description="Single-page application HTML document.",
+    )
 
     # Mount modular routers
     application.include_router(plan_router)

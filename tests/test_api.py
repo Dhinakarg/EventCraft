@@ -79,6 +79,8 @@ def test_security_headers_present() -> None:
     assert response.headers.get("X-Content-Type-Options") == "nosniff"
     assert response.headers.get("X-Frame-Options") == "DENY"
     assert response.headers.get("Referrer-Policy") == "strict-origin-when-cross-origin"
+    assert response.headers.get("Permissions-Policy") == "geolocation=(), camera=(), microphone=()"
+    assert response.headers.get("Cross-Origin-Opener-Policy") == "same-origin"
     assert "default-src 'self'" in response.headers.get("Content-Security-Policy", "")
 
 
@@ -174,3 +176,75 @@ def test_generic_exception_handler_masking() -> None:
     assert res.status_code == 500
     assert b"Sensitive" not in res.body
     assert b"internal server error" in res.body
+
+
+def test_request_body_size_limit_exceeded() -> None:
+    """Verify requests with Content-Length exceeding 1MB are rejected with HTTP 413."""
+    headers = {"Content-Length": "2000000", "Content-Type": "application/json"}
+    response = client.post("/api/chat", content=b"{}", headers=headers)
+    assert response.status_code == 413
+    assert "maximum allowed size" in response.json()["detail"].lower()
+
+
+def test_invalid_content_length_returns_400() -> None:
+    """Verify malformed Content-Length header is rejected with HTTP 400."""
+    headers = {"Content-Length": "not-a-number", "Content-Type": "application/json"}
+    response = client.post("/api/chat", content=b"{}", headers=headers)
+    assert response.status_code == 400
+    assert "invalid content-length" in response.json()["detail"].lower()
+
+
+def test_rate_limiter_uses_non_spoofable_client_host() -> None:
+    """Verify rate limiter relies on request.client.host and ignores spoofed X-Forwarded-For."""
+    fresh_app = create_app()
+    fresh_app.state.rate_limiter = RateLimiter(limit_per_minute=2)
+    test_client = TestClient(fresh_app)
+
+    with patch("app.security.get_settings") as mock_settings:
+        mock_settings.return_value.rate_limit_per_min = 2
+        # Send 2 requests with spoofed X-Forwarded-For headers
+        res1 = test_client.post(
+            "/api/chat",
+            json={"plan_context": "test", "question": "q1"},
+            headers={"X-Forwarded-For": "1.2.3.4"},
+        )
+        assert res1.status_code == 200
+
+        res2 = test_client.post(
+            "/api/chat",
+            json={"plan_context": "test", "question": "q2"},
+            headers={"X-Forwarded-For": "5.6.7.8"},
+        )
+        assert res2.status_code == 200
+
+        # Third request from same test_client (same client.host = testclient) must be blocked
+        res3 = test_client.post(
+            "/api/chat",
+            json={"plan_context": "test", "question": "q3"},
+            headers={"X-Forwarded-For": "9.10.11.12"},
+        )
+        assert res3.status_code == 429
+
+
+def test_openapi_schema_metadata_complete() -> None:
+    """Verify all routes have summary, description, and response_description in OpenAPI schema."""
+    response = client.get("/openapi.json")
+    assert response.status_code == 200
+    schema = response.json()
+    paths = schema.get("paths", {})
+
+    for endpoint in ["/api/plan", "/api/chat"]:
+        op = paths[endpoint]["post"]
+        assert op.get("summary")
+        assert op.get("description")
+        assert op["responses"]["200"].get("description")
+
+    ics_op = paths["/api/export/ics"]["get"]
+    assert ics_op.get("summary")
+    assert ics_op.get("description")
+    assert ics_op["responses"]["200"].get("description")
+
+    health_op = paths["/health"]["get"]
+    assert health_op.get("summary")
+    assert health_op.get("description")
+    assert health_op["responses"]["200"].get("description")

@@ -53,19 +53,51 @@ def get_rate_limiter(request: Request) -> RateLimiter:
     return limiter
 
 
+MAX_REQUEST_BODY_SIZE: int = 1_048_576  # 1 MB
+
+
+def check_request_body_size(request: Request, max_size: int = MAX_REQUEST_BODY_SIZE) -> JSONResponse | None:
+    """Validate request Content-Length header against maximum allowed payload size."""
+    raw_length = request.headers.get("content-length")
+    if not raw_length:
+        return None
+    try:
+        length = int(raw_length)
+    except ValueError:
+        return JSONResponse(
+            status_code=400,
+            content={"detail": "Invalid Content-Length header."},
+        )
+    if length > max_size:
+        return JSONResponse(
+            status_code=413,
+            content={"detail": f"Request payload exceeds maximum allowed size ({max_size} bytes)."},
+        )
+    return None
+
+
+def _is_rate_limited(request: Request, limiter: RateLimiter, limit: int) -> bool:
+    """Return True if an API request exceeds the rate limit for the client host."""
+    if not request.url.path.startswith("/api/"):
+        return False
+    client_ip = request.client.host if request.client else "unknown"
+    return not limiter.check(client_ip, limit)
+
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):  # pylint: disable=too-few-public-methods
     """Add essential security headers and enforce per-IP rate limits."""
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         """Process incoming request, apply rate limiting, and inject security headers."""
-        settings = get_settings()
-        rate_limiter: RateLimiter = getattr(request.app.state, "rate_limiter", None) or RateLimiter(
-            settings.rate_limit_per_min
-        )
-        client_ip = request.client.host if request.client else "unknown"
+        size_error = check_request_body_size(request)
+        if size_error is not None:
+            return size_error
 
-        # Apply rate limiting to API routes
-        if request.url.path.startswith("/api/") and not rate_limiter.check(client_ip, settings.rate_limit_per_min):
+        settings = get_settings()
+        limiter: RateLimiter | None = getattr(request.app.state, "rate_limiter", None)
+        active_limiter = limiter if limiter is not None else RateLimiter(settings.rate_limit_per_min)
+
+        if _is_rate_limited(request, active_limiter, settings.rate_limit_per_min):
             return JSONResponse(
                 status_code=429,
                 content={"detail": "Rate limit exceeded. Please try again later."},
@@ -75,6 +107,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):  # pylint: disable=too-few-
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=()"
+        response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
         csp = (
             "default-src 'self' https: data: 'unsafe-inline'; "
             "font-src 'self' https://fonts.gstatic.com; "

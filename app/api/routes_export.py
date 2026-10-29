@@ -12,7 +12,15 @@ from app.models import EventRequest, EventType
 router = APIRouter(tags=["export"])
 
 
-@router.get("/api/export/ics")
+@router.get(
+    "/api/export/ics",
+    summary="Export timeline as iCalendar file",
+    description=(
+        "Export the backward-scheduled event milestone timeline as a downloadable iCalendar (.ics) file "
+        "compatible with Google Calendar, Outlook, and Apple Calendar."
+    ),
+    response_description="iCalendar (.ics) formatted calendar stream attachment.",
+)
 def export_timeline_ics(
     event_date: date = Query(...),
     event_type: EventType = Query(default=EventType.WEDDING),

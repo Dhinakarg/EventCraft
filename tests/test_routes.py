@@ -25,6 +25,8 @@ def test_route_security_headers_present() -> None:
     assert resp.headers.get("x-content-type-options") == "nosniff"
     assert resp.headers.get("x-frame-options") == "DENY"
     assert "strict-origin" in resp.headers.get("referrer-policy", "")
+    assert resp.headers.get("permissions-policy") == "geolocation=(), camera=(), microphone=()"
+    assert resp.headers.get("cross-origin-opener-policy") == "same-origin"
 
 
 def test_route_plan_success() -> None:

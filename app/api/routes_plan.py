@@ -10,7 +10,18 @@ from app.services.plan_service import create_event_plan
 router = APIRouter(tags=["plan"])
 
 
-@router.post("/api/plan", response_model=PlanResponse)
+@router.post(
+    "/api/plan",
+    response_model=PlanResponse,
+    summary="Generate comprehensive event plan",
+    description=(
+        "Generate a deterministic event plan complete with budget allocation, "
+        "milestone timeline, vendor recommendations, and AI/fallback theme ideas."
+    ),
+    response_description=(
+        "Generated event plan containing budget breakdown, timeline tasks, vendor checklist, and creative ideas."
+    ),
+)
 def plan_endpoint(
     req: EventRequest,
     cache: LruCache = Depends(get_lru_cache),

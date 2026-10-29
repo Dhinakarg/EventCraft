@@ -256,7 +256,7 @@
             <!-- Event Date -->
             <div class="form-group">
               <label for="event_date">Event Date (Must be in future)</label>
-              <input type="date" id="event_date" name="event_date" class="form-control" required aria-required="true" aria-invalid="false" aria-describedby="date-help error-date">
+              <input type="date" id="event_date" name="event_date" class="form-control" autocomplete="off" required aria-required="true" aria-invalid="false" aria-describedby="date-help error-date">
               <p id="date-help" class="input-desc hint">Used to calculate backward-scheduled milestones.</p>
               <p id="error-date" class="input-error" role="alert" hidden>Please select a valid future date.</p>
             </div>
@@ -265,13 +265,13 @@
             <div class="form-row field-row">
               <div class="form-group">
                 <label for="guest_count">Guests (1 - 2000)</label>
-                <input type="number" id="guest_count" name="guest_count" class="form-control" min="1" max="2000" placeholder="e.g. 100" required aria-required="true" aria-invalid="false" aria-describedby="error-guests">
+                <input type="number" id="guest_count" name="guest_count" class="form-control" autocomplete="off" min="1" max="2000" placeholder="e.g. 100" required aria-required="true" aria-invalid="false" aria-describedby="error-guests">
                 <p id="error-guests" class="input-error" role="alert" hidden>Guest count must be between 1 and 2000.</p>
               </div>
 
               <div class="form-group">
                 <label for="total_budget">Total Budget (₹)</label>
-                <input type="number" id="total_budget" name="total_budget" class="form-control" min="1000" step="1000" placeholder="e.g. 500000" required aria-required="true" aria-invalid="false" aria-describedby="error-budget">
+                <input type="number" id="total_budget" name="total_budget" class="form-control" autocomplete="off" min="1000" step="1000" placeholder="e.g. 500000" required aria-required="true" aria-invalid="false" aria-describedby="error-budget">
                 <p id="error-budget" class="input-error" role="alert" hidden>Budget must be greater than zero.</p>
               </div>
             </div>
@@ -290,7 +290,7 @@
             <!-- Vibe (Full width, datalist) -->
             <div class="form-group">
               <label for="vibe">Aesthetic Vibe</label>
-              <input type="text" id="vibe" name="vibe" class="form-control" list="vibe-suggestions" maxlength="80" placeholder="e.g. Modern Minimalist, Rustic" aria-describedby="vibe-desc">
+              <input type="text" id="vibe" name="vibe" class="form-control" autocomplete="off" list="vibe-suggestions" maxlength="80" placeholder="e.g. Modern Minimalist, Rustic" aria-describedby="vibe-desc">
               <datalist id="vibe-suggestions">
                 <option value="Modern Minimalist">
                 <option value="Rustic">
@@ -304,7 +304,7 @@
             <!-- City (Full width) -->
             <div class="form-group">
               <label for="city">City / Destination</label>
-              <input type="text" id="city" name="city" class="form-control" maxlength="100" placeholder="e.g. Bengaluru, Mumbai, Goa" aria-describedby="city-desc">
+              <input type="text" id="city" name="city" class="form-control" autocomplete="address-level2" maxlength="100" placeholder="e.g. Bengaluru, Mumbai, Goa" aria-describedby="city-desc">
               <p id="city-desc" class="input-desc hint">City or region for vendor lead times.</p>
             </div>
           </fieldset>
@@ -398,7 +398,7 @@
                 <label for="custom_notes">Notes & Special Requests</label>
                 <span id="notes-counter" class="char-counter" aria-live="polite">500 characters left</span>
               </div>
-              <textarea id="custom_notes" name="custom_notes" class="form-control" rows="3" maxlength="500" placeholder="Dietary notes, timing preferences, etc." aria-describedby="notes-desc notes-counter"></textarea>
+              <textarea id="custom_notes" name="custom_notes" class="form-control" autocomplete="off" rows="3" maxlength="500" placeholder="Dietary notes, timing preferences, etc." aria-describedby="notes-desc notes-counter"></textarea>
               <p id="notes-desc" class="input-desc hint">Maximum 500 characters.</p>
             </div>
           </fieldset>
@@ -592,7 +592,7 @@
 
               <form id="chat-query-form" class="chat-query-form">
                 <label for="chat-input" class="sr-status">Ask the planner a question</label>
-                <input type="text" id="chat-input" class="form-control" maxlength="300" placeholder="Ask about timeline buffers, vendor vetting, or catering..." required>
+                <input type="text" id="chat-input" class="form-control" autocomplete="off" maxlength="300" placeholder="Ask about timeline buffers, vendor vetting, or catering..." required>
                 <button type="submit" id="chat-send-btn" class="btn btn-primary btn-sm">
                   <svg class="icon" aria-hidden="true"><use href="#icon-chat"></use></svg>
                   <span>Send</span>

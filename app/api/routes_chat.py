@@ -9,7 +9,16 @@ from app.security import RateLimiter, get_rate_limiter
 router = APIRouter(tags=["chat"])
 
 
-@router.post("/api/chat", response_model=ChatRefineResponse)
+@router.post(
+    "/api/chat",
+    response_model=ChatRefineResponse,
+    summary="Chat with event planning assistant",
+    description=(
+        "Conversational plan refinement assistant strictly scoped to event planning, "
+        "budgeting, timeline adjustments, and vendor advice."
+    ),
+    response_description="AI or fallback refinement suggestions with actionable planning advice.",
+)
 def chat_endpoint(
     req: ChatRefineRequest,
     cache: LruCache = Depends(get_lru_cache),
