@@ -4,7 +4,7 @@ from datetime import date, timedelta
 
 from app.engine.budget import allocate_event_budget
 from app.engine.vendors import build_vendor_checklist
-from app.models import EventRequest, EventType
+from app.models import BudgetResponse, EventRequest, EventType
 
 
 def test_vendor_checklist_generation() -> None:
@@ -65,8 +65,6 @@ def test_community_vendor_categories() -> None:
 
 def test_vendor_checklist_unmatched_budget_fallback() -> None:
     """Verify vendor checklist falls back to default ratio if budget categories are unmatched."""
-    from app.models import BudgetResponse
-
     target_date = date.today() + timedelta(days=90)
     req = EventRequest(
         event_type=EventType.WEDDING,

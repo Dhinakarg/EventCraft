@@ -3,6 +3,7 @@
 from datetime import date, timedelta
 from unittest.mock import patch
 
+from app.ai.schemas import IdeasResponse
 from app.models import EventRequest, EventType, PriorityEnum
 from app.services.plan_service import _build_warnings, create_event_plan
 
@@ -10,7 +11,7 @@ from app.services.plan_service import _build_warnings, create_event_plan
 def test_build_warnings_all_clear() -> None:
     """Warnings list should be empty when budget is feasible and lead time is normal."""
     warnings = _build_warnings(budget_feasible=True, b_notes=[], rush_warn=None)
-    assert warnings == []
+    assert not warnings
 
 
 def test_build_warnings_budget_notes_only() -> None:
@@ -60,7 +61,7 @@ def test_create_event_plan_generates_complete_response() -> None:
     assert plan.budget.total_budget == 500_000
     assert len(plan.timeline.tasks) > 0
     assert len(plan.vendors) > 0
-    assert plan.ideas is not None
+    assert isinstance(plan.ideas, IdeasResponse)
     assert len(plan.ideas.themes) > 0
 
 

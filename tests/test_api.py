@@ -1,13 +1,16 @@
 """API integration tests covering valid plan, 422 errors, rate limit 429, headers, and secret leakage."""
 
+import asyncio
 from datetime import date, timedelta
 from unittest.mock import patch
 
+import pytest
 from fastapi.testclient import TestClient
+from starlette.requests import Request
 
 from app.config import get_settings
 from app.main import app
-from app.security import clear_rate_limits
+from app.security import clear_rate_limits, generic_exception_handler
 
 client = TestClient(app)
 
@@ -123,11 +126,15 @@ def test_no_secrets_in_responses() -> None:
     assert "traceback" not in body_text.lower()
 
 
-def test_full_plan_request_to_plan_flow_with_fallback_ideas(monkeypatch) -> None:
+def _mock_empty_settings() -> object:
+    return type("Settings", (), {"gemini_api_key": ""})()
+
+
+def test_full_plan_request_to_plan_flow_with_fallback_ideas(monkeypatch: pytest.MonkeyPatch) -> None:
     """Integration test of end-to-end request->plan flow with fallback ideas."""
     monkeypatch.setattr(
         "app.ai.gemini_client.get_settings",
-        lambda: type("Settings", (), {"gemini_api_key": ""})(),
+        _mock_empty_settings,
     )
     target_date = (date.today() + timedelta(days=180)).isoformat()
     payload = {
@@ -160,12 +167,6 @@ def test_full_plan_request_to_plan_flow_with_fallback_ideas(monkeypatch) -> None
 
 def test_generic_exception_handler_masking() -> None:
     """Verify generic exception handler masks internal details and returns 500 JSON."""
-    import asyncio
-
-    from starlette.requests import Request
-
-    from app.security import generic_exception_handler
-
     scope = {"type": "http", "method": "GET", "path": "/"}
     req = Request(scope)
     res = asyncio.run(generic_exception_handler(req, RuntimeError("Sensitive internal database error")))
