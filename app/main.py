@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from app.ai.gemini_client import LruCache
 from app.api.routes_chat import chat_endpoint
 from app.api.routes_chat import router as chat_router
 from app.api.routes_export import export_timeline_ics
@@ -15,7 +16,7 @@ from app.api.routes_export import router as export_router
 from app.api.routes_plan import plan_endpoint as create_event_plan
 from app.api.routes_plan import router as plan_router
 from app.config import get_settings
-from app.security import SecurityHeadersMiddleware, generic_exception_handler
+from app.security import RateLimiter, SecurityHeadersMiddleware, generic_exception_handler
 from app.services.plan_service import _build_warnings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -57,6 +58,9 @@ def create_app() -> FastAPI:
     """Build and configure the FastAPI application instance."""
     settings = get_settings()
     application = FastAPI(title=settings.app_name, version="1.0.0")
+
+    application.state.rate_limiter = RateLimiter(settings.rate_limit_per_min)
+    application.state.cache = LruCache()
 
     application.add_middleware(SecurityHeadersMiddleware)
     application.add_middleware(

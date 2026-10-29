@@ -9,8 +9,8 @@ from fastapi.testclient import TestClient
 from starlette.requests import Request
 
 from app.config import get_settings
-from app.main import app
-from app.security import clear_rate_limits, generic_exception_handler
+from app.main import app, create_app
+from app.security import RateLimiter, generic_exception_handler
 
 client = TestClient(app)
 
@@ -84,24 +84,25 @@ def test_security_headers_present() -> None:
 
 def test_rate_limit_returns_429() -> None:
     """Verify exceeding per-IP rate limit triggers HTTP 429."""
-    clear_rate_limits()
+    fresh_app = create_app()
+    fresh_app.state.rate_limiter = RateLimiter(limit_per_minute=5)
+    test_client = TestClient(fresh_app)
+
     with patch("app.security.get_settings") as mock_settings:
         mock_settings.return_value.rate_limit_per_min = 5
         # Fire requests up to the limit
         for _ in range(5):
-            res = client.post("/api/chat", json={"plan_context": "test", "question": "budget tip"})
+            res = test_client.post("/api/chat", json={"plan_context": "test", "question": "budget tip"})
             assert res.status_code == 200
 
         # Next request must return 429
-        res_exceeded = client.post("/api/chat", json={"plan_context": "test", "question": "budget tip"})
+        res_exceeded = test_client.post("/api/chat", json={"plan_context": "test", "question": "budget tip"})
         assert res_exceeded.status_code == 429
         assert "rate limit" in res_exceeded.json()["detail"].lower()
-    clear_rate_limits()
 
 
 def test_no_secrets_in_responses() -> None:
     """Verify responses never leak API keys, system tokens, or internal env vars."""
-    clear_rate_limits()
     target_date = (date.today() + timedelta(days=150)).isoformat()
     with patch("app.ai.gemini_client._get_client", return_value=None):
         response = client.post(

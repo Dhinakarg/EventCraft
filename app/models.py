@@ -9,11 +9,10 @@ from app.constants import (
     MAX_CITY_LENGTH,
     MAX_GUEST_COUNT,
     MAX_NOTES_LENGTH,
-    MAX_PRIORITIES_COUNT,
     MAX_VIBE_LENGTH,
     MIN_GUEST_COUNT,
 )
-from app.sanitizer import sanitize_raw_text
+from app.sanitizer import sanitize_raw_text, validate_future_date, validate_priorities
 
 VALID_PRIORITIES = {"venue", "food", "decor", "photography", "entertainment", "other"}
 
@@ -55,27 +54,15 @@ class EventRequest(BaseModel):
 
     @field_validator("event_date")
     @classmethod
-    def validate_future_date(cls, v: date) -> date:
+    def check_event_date(cls, v: date) -> date:
         """Ensure the event date is set strictly in the future."""
-        if v <= date.today():
-            raise ValueError("event_date must be in the future")
-        return v
+        return validate_future_date(v)
 
     @field_validator("priorities")
     @classmethod
-    def validate_priorities(cls, v: list[str]) -> list[str]:
+    def check_priorities(cls, v: list[str]) -> list[str]:
         """Validate maximum priorities from the allowed set."""
-        if len(v) > MAX_PRIORITIES_COUNT:
-            raise ValueError(f"priorities cannot exceed {MAX_PRIORITIES_COUNT} items")
-        cleaned = []
-        for p in v:
-            norm = p.strip().lower()
-            if norm not in VALID_PRIORITIES:
-                msg = f"Invalid priority '{p}'. Must be one of {sorted(VALID_PRIORITIES)}"
-                raise ValueError(msg)
-            if norm not in cleaned:
-                cleaned.append(norm)
-        return cleaned
+        return validate_priorities(v)
 
     @field_validator("city", "vibe", "notes")
     @classmethod

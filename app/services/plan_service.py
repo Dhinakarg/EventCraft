@@ -1,6 +1,6 @@
 """Domain planning service orchestrating deterministic engines and AI ideation."""
 
-from app.ai.gemini_client import generate_event_ideas
+from app.ai.gemini_client import LruCache, generate_event_ideas
 from app.ai.schemas import IdeasRequest
 from app.engine.budget import allocate_event_budget
 from app.engine.timeline import create_backward_timeline
@@ -18,11 +18,12 @@ def _build_warnings(budget_feasible: bool, b_notes: list[str], rush_warn: str | 
     return warns
 
 
-def create_event_plan(req: EventRequest) -> PlanResponse:
+def create_event_plan(req: EventRequest, cache: LruCache | None = None) -> PlanResponse:
     """Generate master plan combining pure deterministic engines and GenAI ideas.
 
     Args:
         req: Validated user event request.
+        cache: Optional LruCache instance for caching ideas.
 
     Returns:
         PlanResponse with budget, timeline, vendors, warnings, and creative ideas.
@@ -40,7 +41,7 @@ def create_event_plan(req: EventRequest) -> PlanResponse:
         city=req.city,
         notes=req.notes or "",
     )
-    ideas = generate_event_ideas(ideas_req)
+    ideas = generate_event_ideas(ideas_req, cache=cache)
 
     return PlanResponse(
         event_type=req.event_type,

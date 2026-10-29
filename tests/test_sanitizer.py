@@ -1,6 +1,16 @@
-"""Unit tests for input sanitization and PII protection."""
+"""Unit tests for input sanitization, untrusted text validation, and PII protection."""
 
-from app.sanitizer import mask_sensitive_info, sanitize_raw_text, sanitize_text
+from datetime import date, timedelta
+
+import pytest
+
+from app.sanitizer import (
+    mask_sensitive_info,
+    sanitize_raw_text,
+    sanitize_text,
+    validate_future_date,
+    validate_priorities,
+)
 
 
 def test_sanitize_text_strips_control_characters() -> None:
@@ -39,3 +49,28 @@ def test_mask_sensitive_info_phone() -> None:
     masked = mask_sensitive_info(text)
     assert "555-123-4567" not in masked
     assert "[REDACTED_PHONE]" in masked
+
+
+def test_validate_future_date() -> None:
+    """Test future date validator allows future dates and rejects past/today dates."""
+    future = date.today() + timedelta(days=10)
+    assert validate_future_date(future) == future
+
+    past = date.today() - timedelta(days=1)
+    with pytest.raises(ValueError, match="event_date must be in the future"):
+        validate_future_date(past)
+
+    with pytest.raises(ValueError, match="event_date must be in the future"):
+        validate_future_date(date.today())
+
+
+def test_validate_priorities() -> None:
+    """Test priority validator validates, deduplicates, and rejects invalid options."""
+    valid = ["venue", "food"]
+    assert validate_priorities(valid) == ["venue", "food"]
+
+    with pytest.raises(ValueError, match="priorities cannot exceed 3 items"):
+        validate_priorities(["venue", "food", "decor", "entertainment"])
+
+    with pytest.raises(ValueError, match="Invalid priority"):
+        validate_priorities(["invalid_category"])
