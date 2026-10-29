@@ -7,9 +7,10 @@ import { announceStatus, createEl, createSvgIcon } from "./utils.js";
 /**
  * Render dismissible alert region with severity levels (info, warning, critical).
  * Rush timeline notice receives "critical" style and plain-language explanation.
- * @param {Array<string>} warnings 
- * @param {string|null} rushWarning 
- * @param {HTMLElement} container 
+ * @param {Array<string>} warnings - List of warning messages.
+ * @param {string|null} rushWarning - Optional rush scheduling warning string.
+ * @param {HTMLElement} container - Target DOM container element.
+ * @returns {void}
  */
 export function renderWarnings(warnings, rushWarning, container) {
   if (!container) return;

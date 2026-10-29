@@ -8,6 +8,7 @@ import { announceStatus } from "./utils.js";
 
 /**
  * Download .ics timeline calendar file.
+ * @returns {void}
  */
 export function downloadIcs() {
   if (!state.currentPlan) {
@@ -22,6 +23,7 @@ export function downloadIcs() {
 
 /**
  * Copy plain text summary of plan to clipboard with "Copied!" confirmation.
+ * @returns {void}
  */
 export function copyPlanAsText() {
   if (!state.currentPlan) {

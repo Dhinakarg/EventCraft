@@ -5,7 +5,8 @@
 
 /**
  * Announce messages to screen readers via aria-live region.
- * @param {string} msg 
+ * @param {string} msg - Announcement string for screen readers.
+ * @returns {void}
  */
 export function announceStatus(msg) {
   const el = document.getElementById("status-announcer");

@@ -8,8 +8,9 @@ import { announceStatus, createEl, createSvgIcon, formatFriendlyDate } from "./u
 
 /**
  * Render Vertical Timeline grouped by phase with friendly dates and critical filter toggle.
- * @param {Object} timeline 
- * @param {HTMLElement} container 
+ * @param {Object} timeline - Timeline response data object.
+ * @param {HTMLElement} container - Target DOM container element.
+ * @returns {void}
  */
 export function renderTimelineTab(timeline, container) {
   if (!container || !timeline) return;

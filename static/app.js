@@ -5,7 +5,7 @@
 
 import { appendChatMessage, initChatChips, onChatSubmit } from "./js/chat.js";
 import { copyPlanAsText, downloadIcs } from "./js/export.js";
-import { initFormInteractions } from "./js/form.js?v=2.4";
+import { initFormInteractions } from "./js/form.js";
 import { onPlanSubmit } from "./js/planner.js";
 import { initScenarioButtons } from "./js/scenarios.js";
 import { state } from "./js/state.js";
@@ -13,7 +13,8 @@ import { announceStatus } from "./js/utils.js";
 
 /**
  * Handle Tab Activation and proper ARIA states.
- * @param {string} tabKey 
+ * @param {string} tabKey - Unique key of the tab to activate.
+ * @returns {void}
  */
 export function activateTab(tabKey) {
   const tabs = document.querySelectorAll(".tab-btn");
@@ -39,7 +40,8 @@ export function activateTab(tabKey) {
 
 /**
  * ARIA Tabs Keyboard Navigation (Left, Right, Up, Down, Home, End).
- * @param {KeyboardEvent} e 
+ * @param {KeyboardEvent} e - Keyboard event triggered on tab button.
+ * @returns {void}
  */
 export function onTabKeydown(e) {
   const tabs = Array.from(document.querySelectorAll(".tab-btn"));

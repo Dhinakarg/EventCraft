@@ -8,8 +8,9 @@ import { announceStatus, createEl, createSvgIcon } from "./utils.js";
 
 /**
  * Append chat message to log safely using textContent.
- * @param {string} role 
- * @param {string} text 
+ * @param {string} role - Message sender role ('user' or 'bot').
+ * @param {string} text - Chat message body content.
+ * @returns {void}
  */
 export function appendChatMessage(role, text) {
   const log = document.getElementById("chat-conversation");
@@ -26,12 +27,13 @@ export function appendChatMessage(role, text) {
 
 /**
  * Send chat question to POST /api/chat with disabled state while sending.
- * @param {Event} e 
+ * @param {Event} e - Form submission event.
+ * @returns {Promise<void>}
  */
 export async function onChatSubmit(e) {
   e.preventDefault();
-  const input = document.getElementById("chat-input");
-  const sendBtn = document.getElementById("chat-send-btn");
+  const input = /** @type {HTMLInputElement|null} */ (document.getElementById("chat-input"));
+  const sendBtn = /** @type {HTMLButtonElement|null} */ (document.getElementById("chat-send-btn"));
   if (!input) return;
   const query = input.value.trim();
   if (!query) return;
@@ -75,15 +77,17 @@ export async function onChatSubmit(e) {
 
 /**
  * Bind listeners to chat suggested question chips.
+ * @returns {void}
  */
 export function initChatChips() {
   const chips = document.querySelectorAll(".chat-chip");
   chips.forEach((chip) => {
     chip.addEventListener("click", () => {
-      const input = document.getElementById("chat-input");
-      if (input) {
+      const input = /** @type {HTMLInputElement|null} */ (document.getElementById("chat-input"));
+      const form = document.getElementById("chat-query-form");
+      if (input && form && chip.textContent) {
         input.value = chip.textContent.trim();
-        document.getElementById("chat-query-form").dispatchEvent(new Event("submit"));
+        form.dispatchEvent(new Event("submit"));
       }
     });
   });

@@ -7,8 +7,8 @@ const BASE_URL = "";
 
 /**
  * Handle API responses safely.
- * @param {Response} res 
- * @returns {Promise<any>}
+ * @param {Response} res - Raw fetch response.
+ * @returns {Promise<any>} Parsed JSON response body.
  */
 async function handleResponse(res) {
   if (!res.ok) {
@@ -30,8 +30,8 @@ async function handleResponse(res) {
 
 /**
  * Generate full event plan.
- * @param {Object} planRequest 
- * @returns {Promise<Object>}
+ * @param {Object} planRequest - Event parameters payload.
+ * @returns {Promise<Object>} Generated plan response data.
  */
 export async function generateMasterPlan(planRequest) {
   const res = await fetch(`${BASE_URL}/api/plan/generate`, {
@@ -44,8 +44,8 @@ export async function generateMasterPlan(planRequest) {
 
 /**
  * Recalculate budget only.
- * @param {Object} planRequest 
- * @returns {Promise<Object>}
+ * @param {Object} planRequest - Budget calculation request payload.
+ * @returns {Promise<Object>} Budget response data.
  */
 export async function fetchBudget(planRequest) {
   const res = await fetch(`${BASE_URL}/api/plan/budget`, {
@@ -58,8 +58,8 @@ export async function fetchBudget(planRequest) {
 
 /**
  * Fetch creative ideas from LLM / fallback.
- * @param {Object} ideaRequest 
- * @returns {Promise<Object>}
+ * @param {Object} ideaRequest - Ideas request parameters.
+ * @returns {Promise<Object>} Ideas response payload.
  */
 export async function fetchCreativeIdeas(ideaRequest) {
   const res = await fetch(`${BASE_URL}/api/ai/ideas`, {
@@ -72,9 +72,9 @@ export async function fetchCreativeIdeas(ideaRequest) {
 
 /**
  * Send chat message to conversational copilot.
- * @param {string} planContext 
- * @param {string} question 
- * @returns {Promise<Object>}
+ * @param {string} planContext - Plan summary context string.
+ * @param {string} question - User question text.
+ * @returns {Promise<Object>} Assistant reply payload.
  */
 export async function sendChatMessage(planContext, question) {
   const res = await fetch(`${BASE_URL}/api/ai/chat`, {
@@ -87,7 +87,7 @@ export async function sendChatMessage(planContext, question) {
 
 /**
  * Check backend health status.
- * @returns {Promise<Object>}
+ * @returns {Promise<Object>} Health status response.
  */
 export async function checkHealth() {
   const res = await fetch(`${BASE_URL}/health`);

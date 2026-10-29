@@ -9,8 +9,9 @@ import { announceStatus, createEl, createSvgIcon, formatCurrency, formatFriendly
 /**
  * Render Vendor Tab with progress bar, status select (To do/Contacted/Booked), urgency badge,
  * interview questions in collapsible <details>, and localStorage persistence.
- * @param {Array} vendors 
- * @param {HTMLElement} container 
+ * @param {Array} vendors - List of vendor checklist items.
+ * @param {HTMLElement} container - Target DOM container element.
+ * @returns {void}
  */
 export function renderVendorsTab(vendors, container) {
   if (!container || !vendors) return;

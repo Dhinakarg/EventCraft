@@ -6,7 +6,8 @@ import { formatCurrency, formatFriendlyDate } from "./utils.js";
 
 /**
  * Render the 4 KPI cards at the top of results.
- * @param {Object} plan 
+ * @param {Object} plan - Master plan response data.
+ * @returns {void}
  */
 export function renderKpiCards(plan) {
   const b = plan.budget;

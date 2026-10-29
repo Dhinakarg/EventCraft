@@ -1,0 +1,82 @@
+/* Chat Component & Suggested Questions */
+.chat-suggestions-area {
+  margin-bottom: var(--space-3);
+}
+.chat-suggestions-label {
+  display: block;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.chat-chips-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.chat-chip {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  font-size: var(--font-size-xs);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  color: var(--text);
+  transition: all 0.15s ease;
+}
+.chat-chip:hover {
+  background-color: var(--surface-2);
+  border-color: var(--primary);
+}
+.chat-chip:focus-visible {
+  outline: 2px solid var(--focus-ring);
+}
+.check-box {
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+.check-label {
+  cursor: pointer;
+  flex: 1;
+}
+
+
+/* Chat Component */
+.chat-log {
+  max-height: 380px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
+  background-color: var(--surface-2);
+}
+.chat-msg {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+.chat-msg-user {
+  background-color: var(--primary);
+  color: var(--primary-contrast);
+  margin-left: var(--space-7);
+}
+.chat-msg-bot {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  margin-right: var(--space-7);
+}
+
+
+/* Chat Query Form Utility */
+.chat-query-form {
+  display: flex;
+  gap: 8px;
+}

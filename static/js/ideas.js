@@ -7,8 +7,9 @@ import { createEl, createSvgIcon } from "./utils.js";
 
 /**
  * Render Ideas Tab with card grid and AI-generated vs Template ideas badge with text explanation.
- * @param {Object} ideas 
- * @param {HTMLElement} container 
+ * @param {Object} ideas - Creative ideas response data.
+ * @param {HTMLElement} container - Target DOM container.
+ * @returns {void}
  */
 export function renderIdeasTab(ideas, container) {
   if (!container) return;

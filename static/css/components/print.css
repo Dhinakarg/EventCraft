@@ -1,0 +1,34 @@
+/* Print Stylesheet */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .site-header,
+  .form-panel,
+  .tabs-list,
+  .actions-bar,
+  .site-footer,
+  .controls-cluster,
+  .chat-box,
+  .skip-link {
+    display: none !important;
+  }
+  .planner-layout {
+    display: block !important;
+  }
+  .tab-content {
+    display: block !important;
+    page-break-after: always;
+  }
+  .results-panel {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  .chart-bar-inner {
+    background: #555555 !important;
+    color: #ffffff !important;
+  }
+}
+

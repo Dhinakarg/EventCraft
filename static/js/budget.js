@@ -18,8 +18,9 @@ const CHART_COLORS = [
 
 /**
  * Render Budget Tab with SVG Donut Chart, visual legend, hidden chart summary, and itemized table.
- * @param {Object} budget 
- * @param {HTMLElement} container 
+ * @param {Object} budget - Budget response data object.
+ * @param {HTMLElement} container - DOM container element.
+ * @returns {void}
  */
 export function renderBudgetTab(budget, container) {
   if (!container || !budget) return;

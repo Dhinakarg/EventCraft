@@ -5,7 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EventCraft AI — Accessible Event Planning Assistant</title>
   <meta name="description" content="Accessible deterministic event planner with GenAI creative assistance for weddings, birthdays, and community festivals.">
-  <link rel="stylesheet" href="/static/styles.css?v=2.4">
+  <link rel="stylesheet" href="/static/css/tokens.css">
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/layout.css">
+  <link rel="stylesheet" href="/static/css/components/form.css">
+  <link rel="stylesheet" href="/static/css/components/tabs.css">
+  <link rel="stylesheet" href="/static/css/components/budget.css">
+  <link rel="stylesheet" href="/static/css/components/timeline.css">
+  <link rel="stylesheet" href="/static/css/components/vendors.css">
+  <link rel="stylesheet" href="/static/css/components/ideas.css">
+  <link rel="stylesheet" href="/static/css/components/chat.css">
+  <link rel="stylesheet" href="/static/css/components/print.css" media="print">
   <script>
     (function () {
       try {
@@ -18,18 +28,12 @@
           document.documentElement.setAttribute("data-font-size", savedSize);
         }
       } catch (e) {}
-      window.addEventListener("wheel", function (e) {
-        if (e.target && e.target.type === "number") {
-          e.preventDefault();
-          e.target.blur();
-        }
-      }, { passive: false });
     })();
   </script>
 </head>
 <body>
   <!-- Inline SVG Icon Sprite (Zero External Dependencies, aria-hidden) -->
-  <svg style="display: none;" aria-hidden="true">
+  <svg class="icon-sprite" aria-hidden="true">
     <defs>
       <!-- Unique Brand Logo: EventCraft Celebration Marquee & Pavilion -->
       <symbol id="icon-brand-logo" viewBox="0 0 24 24">
@@ -187,7 +191,7 @@
           <button type="button" class="btn btn-sm btn-size" id="btn-size-xl" data-size="xl" aria-pressed="false" aria-label="Extra large text size">A++</button>
         </div>
         <!-- Hidden select element for full backward compatibility -->
-        <select id="font-size-select" style="display: none;" aria-hidden="true" tabindex="-1">
+        <select id="font-size-select" class="hidden-accessible" aria-hidden="true" tabindex="-1">
           <option value="normal">Default</option>
           <option value="large">Large</option>
           <option value="xl">Extra Large</option>
@@ -207,7 +211,7 @@
     <div class="planner-layout">
       <!-- Event Parameters Form Panel (Desktop: Sticky max 420px; Mobile: Collapses post-generation) -->
       <section class="form-panel" aria-labelledby="form-heading">
-        <h2 id="form-heading" style="font-size: 1.25rem; margin-bottom: 16px;">Plan Your Event</h2>
+        <h2 id="form-heading" class="form-heading">Plan Your Event</h2>
 
         <!-- Tablet/Mobile Summary Bar (collapses on plan generation) -->
         <div id="form-summary-bar" class="form-summary-bar" hidden>
@@ -261,13 +265,13 @@
             <div class="form-row field-row">
               <div class="form-group">
                 <label for="guest_count">Guests (1 - 2000)</label>
-                <input type="number" id="guest_count" name="guest_count" class="form-control" min="1" max="2000" placeholder="e.g. 100" required aria-required="true" aria-invalid="false" aria-describedby="error-guests" onwheel="this.blur(); event.preventDefault();">
+                <input type="number" id="guest_count" name="guest_count" class="form-control" min="1" max="2000" placeholder="e.g. 100" required aria-required="true" aria-invalid="false" aria-describedby="error-guests">
                 <p id="error-guests" class="input-error" role="alert" hidden>Guest count must be between 1 and 2000.</p>
               </div>
 
               <div class="form-group">
                 <label for="total_budget">Total Budget (₹)</label>
-                <input type="number" id="total_budget" name="total_budget" class="form-control" min="1000" step="1000" placeholder="e.g. 500000" required aria-required="true" aria-invalid="false" aria-describedby="error-budget" onwheel="this.blur(); event.preventDefault();">
+                <input type="number" id="total_budget" name="total_budget" class="form-control" min="1000" step="1000" placeholder="e.g. 500000" required aria-required="true" aria-invalid="false" aria-describedby="error-budget">
                 <p id="error-budget" class="input-error" role="alert" hidden>Budget must be greater than zero.</p>
               </div>
             </div>
@@ -342,7 +346,7 @@
                 </label>
               </div>
               <!-- Hidden select for complete backward compatibility -->
-              <select id="priorities" name="priorities" class="form-control" multiple size="3" style="display: none;" aria-hidden="true" tabindex="-1">
+              <select id="priorities" name="priorities" class="form-control hidden-accessible" multiple size="3" aria-hidden="true" tabindex="-1">
                 <option value="venue">Venue & Space</option>
                 <option value="food">Food & Catering</option>
                 <option value="photography">Photography</option>
@@ -412,7 +416,7 @@
       <!-- Results & Tabs Display Area -->
       <section class="results-panel" aria-labelledby="results-heading">
         <div class="actions-bar">
-          <h2 id="results-heading" style="font-size: 1.25rem;">Event Master Plan</h2>
+          <h2 id="results-heading" class="results-heading">Event Master Plan</h2>
           <div class="actions-toolbar" role="toolbar" aria-label="Export and sharing options">
             <button type="button" id="btn-export-ics" class="btn btn-sm btn-toolbar">
               <svg class="icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
@@ -586,7 +590,7 @@
                 </div>
               </div>
 
-              <form id="chat-query-form" style="display: flex; gap: 8px;">
+              <form id="chat-query-form" class="chat-query-form">
                 <label for="chat-input" class="sr-status">Ask the planner a question</label>
                 <input type="text" id="chat-input" class="form-control" maxlength="300" placeholder="Ask about timeline buffers, vendor vetting, or catering..." required>
                 <button type="submit" id="chat-send-btn" class="btn btn-primary btn-sm">

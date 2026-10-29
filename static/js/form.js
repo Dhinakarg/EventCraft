@@ -1,121 +1,32 @@
 /**
- * EventCraft AI - Form Interactions & Validation
- * Inline validation, live per-guest calculations, character limits, and responsive collapse.
+ * EventCraft AI - Form Interactions & Event Listeners
+ * Live calculations, character counters, priority constraints, and responsive collapse.
  */
 
+import {
+  calculatePerGuest,
+  isValidBudget,
+  isValidFutureDate,
+  isValidGuestCount,
+  validateField,
+} from "./form_validation.js";
 import { formatCurrency } from "./utils.js";
 
-/**
- * Pure validation helper for future date.
- * @param {string} dateStr
- * @param {Date} [today]
- * @returns {boolean}
- */
-export function isValidFutureDate(dateStr, today = new Date()) {
-  if (!dateStr) return false;
-  const selectedDate = new Date(dateStr);
-  if (isNaN(selectedDate.getTime())) return false;
-  const startOfToday = new Date(today);
-  startOfToday.setHours(0, 0, 0, 0);
-  return selectedDate > startOfToday;
-}
+export {
+  calculatePerGuest,
+  isValidBudget,
+  isValidFutureDate,
+  isValidGuestCount,
+  validateField,
+};
 
 /**
- * Pure validation helper for guest count (1 - 2,000).
- * @param {number|string} guests
- * @returns {boolean}
- */
-export function isValidGuestCount(guests) {
-  const num = parseInt(String(guests), 10);
-  return !isNaN(num) && num >= 1 && num <= 2000;
-}
-
-/**
- * Pure validation helper for total budget (> 0).
- * @param {number|string} budget
- * @returns {boolean}
- */
-export function isValidBudget(budget) {
-  const num = parseFloat(String(budget));
-  return !isNaN(num) && num > 0;
-}
-
-/**
- * Pure calculation helper for per-guest cost.
- * @param {number|string} budget
- * @param {number|string} guests
- * @returns {number|null}
- */
-export function calculatePerGuest(budget, guests) {
-  const b = parseFloat(String(budget));
-  const g = parseInt(String(guests), 10);
-  if (!isNaN(b) && b > 0 && !isNaN(g) && g > 0) {
-    return Math.round(b / g);
-  }
-  return null;
-}
-
-/**
- * Validate a form input inline.
- * Returns { field, id, message } on error, or null if valid.
- * @param {string} fieldId
- * @returns {Object|null}
- */
-export function validateField(fieldId) {
-  if (fieldId === "event_date") {
-    const input = document.getElementById("event_date");
-    const err = document.getElementById("error-date");
-    if (!input || !err) return null;
-
-    if (!isValidFutureDate(input.value)) {
-      err.removeAttribute("hidden");
-      input.setAttribute("aria-invalid", "true");
-      return { field: input, id: "event_date", message: "Event date must be a valid future date." };
-    }
-    err.setAttribute("hidden", "");
-    input.setAttribute("aria-invalid", "false");
-    return null;
-  }
-
-  if (fieldId === "guest_count") {
-    const input = document.getElementById("guest_count");
-    const err = document.getElementById("error-guests");
-    if (!input || !err) return null;
-
-    if (!isValidGuestCount(input.value)) {
-      err.removeAttribute("hidden");
-      input.setAttribute("aria-invalid", "true");
-      return { field: input, id: "guest_count", message: "Guest count must be between 1 and 2,000." };
-    }
-    err.setAttribute("hidden", "");
-    input.setAttribute("aria-invalid", "false");
-    return null;
-  }
-
-  if (fieldId === "total_budget") {
-    const input = document.getElementById("total_budget");
-    const err = document.getElementById("error-budget");
-    if (!input || !err) return null;
-
-    if (!isValidBudget(input.value)) {
-      err.removeAttribute("hidden");
-      input.setAttribute("aria-invalid", "true");
-      return { field: input, id: "total_budget", message: "Total budget must be greater than zero." };
-    }
-    err.setAttribute("hidden", "");
-    input.setAttribute("aria-invalid", "false");
-    return null;
-  }
-
-  return null;
-}
-
-/**
- * Update live "= ₹312 per guest" estimate under guests and budget.
+ * Update live "= ₹312 per guest" estimate under guests and budget fields.
+ * @returns {void}
  */
 export function updatePerGuestCalculation() {
-  const guestInput = document.getElementById("guest_count");
-  const budgetInput = document.getElementById("total_budget");
+  const guestInput = /** @type {HTMLInputElement|null} */ (document.getElementById("guest_count"));
+  const budgetInput = /** @type {HTMLInputElement|null} */ (document.getElementById("total_budget"));
   const calcAmount = document.getElementById("per-guest-amount");
   if (!guestInput || !budgetInput || !calcAmount) return;
 
@@ -129,9 +40,10 @@ export function updatePerGuestCalculation() {
 
 /**
  * Update live character counter for notes textarea (500 max).
+ * @returns {void}
  */
 export function updateNotesCounter() {
-  const notesArea = document.getElementById("custom_notes");
+  const notesArea = /** @type {HTMLTextAreaElement|null} */ (document.getElementById("custom_notes"));
   const counter = document.getElementById("notes-counter");
   if (!notesArea || !counter) return;
 
@@ -144,11 +56,14 @@ export function updateNotesCounter() {
 
 /**
  * Enforce max 3 priority chips, update live counter in aria-live region, and sync legacy select.
+ * @returns {void}
  */
 export function updatePrioritiesState() {
-  const chips = document.querySelectorAll('input[name="priorities_chip"]');
+  const chips = /** @type {NodeListOf<HTMLInputElement>} */ (
+    document.querySelectorAll('input[name="priorities_chip"]')
+  );
   const counter = document.getElementById("priority-counter");
-  const legacySelect = document.getElementById("priorities");
+  const legacySelect = /** @type {HTMLSelectElement|null} */ (document.getElementById("priorities"));
 
   const checkedChips = Array.from(chips).filter((c) => c.checked);
   const count = checkedChips.length;
@@ -175,7 +90,8 @@ export function updatePrioritiesState() {
 }
 
 /**
- * Bind form interactive listeners: calculation, counters, chips, blur validation, radio sync.
+ * Bind form interactive listeners: calculation, counters, chips, blur validation, and number input wheel lock.
+ * @returns {void}
  */
 export function initFormInteractions() {
   const guestInput = document.getElementById("guest_count");
@@ -203,10 +119,11 @@ export function initFormInteractions() {
   updatePrioritiesState();
 
   const typeRadios = document.querySelectorAll('input[name="event_type"]');
-  const legacyTypeSelect = document.getElementById("event_type");
+  const legacyTypeSelect = /** @type {HTMLSelectElement|null} */ (document.getElementById("event_type"));
   typeRadios.forEach((radio) => {
     radio.addEventListener("change", () => {
-      if (radio.checked && legacyTypeSelect) legacyTypeSelect.value = radio.value;
+      const radioInput = /** @type {HTMLInputElement} */ (radio);
+      if (radioInput.checked && legacyTypeSelect) legacyTypeSelect.value = radioInput.value;
     });
   });
 
@@ -223,20 +140,23 @@ export function initFormInteractions() {
   numberInputs.forEach((input) => {
     input.addEventListener("wheel", (e) => {
       e.preventDefault();
-      input.blur();
+      const el = /** @type {HTMLInputElement} */ (input);
+      el.blur();
     }, { passive: false });
   });
 
   document.addEventListener("wheel", () => {
-    if (document.activeElement && document.activeElement.type === "number") {
-      document.activeElement.blur();
+    const active = /** @type {HTMLInputElement|null} */ (document.activeElement);
+    if (active && active.type === "number") {
+      active.blur();
     }
   }, { passive: true });
 }
 
 /**
  * Collapse form into a summary bar on tablet/mobile screens after plan generation.
- * @param {Object} plan 
+ * @param {{ event_type: string, total_budget: number, currency: string, guest_count: number, event_date: string }} plan - Generated event plan object.
+ * @returns {void}
  */
 export function updateMobileFormCollapse(plan) {
   const summaryBar = document.getElementById("form-summary-bar");

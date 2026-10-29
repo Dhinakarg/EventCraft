@@ -15,8 +15,9 @@ import { renderWarnings } from "./warnings.js";
 
 /**
  * Submit plan form to POST /api/plan with skeleton loading, error summary, and full render.
- * @param {Event} e 
- * @param {Function} onPlanSuccess Callback to switch tab
+ * @param {Event} e - Form submit event.
+ * @param {Function} [onPlanSuccess] - Optional callback executed on successful plan creation.
+ * @returns {Promise<void>}
  */
 export async function onPlanSubmit(e, onPlanSuccess) {
   e.preventDefault();
