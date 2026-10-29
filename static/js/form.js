@@ -217,6 +217,21 @@ export function initFormInteractions() {
       if (dateInput.getAttribute("aria-invalid") === "true") validateField("event_date");
     });
   }
+
+  // Prevent mouse wheel from inadvertently changing values in number inputs
+  const numberInputs = document.querySelectorAll('input[type="number"]');
+  numberInputs.forEach((input) => {
+    input.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      input.blur();
+    }, { passive: false });
+  });
+
+  document.addEventListener("wheel", () => {
+    if (document.activeElement && document.activeElement.type === "number") {
+      document.activeElement.blur();
+    }
+  }, { passive: true });
 }
 
 /**
