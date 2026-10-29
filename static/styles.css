@@ -563,6 +563,16 @@ label {
   outline: 2px solid var(--danger);
 }
 
+/* Hide spin buttons and prevent accidental increments */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 /* Paired fields: auto-fit wrapping */
 .field-row,
 .form-row {

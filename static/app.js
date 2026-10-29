@@ -5,7 +5,7 @@
 
 import { appendChatMessage, initChatChips, onChatSubmit } from "./js/chat.js";
 import { copyPlanAsText, downloadIcs } from "./js/export.js";
-import { initFormInteractions } from "./js/form.js";
+import { initFormInteractions } from "./js/form.js?v=2.4";
 import { onPlanSubmit } from "./js/planner.js";
 import { initScenarioButtons } from "./js/scenarios.js";
 import { state } from "./js/state.js";
