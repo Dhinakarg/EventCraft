@@ -472,6 +472,28 @@
             </button>
           </div>
         </div>
+ 
+        <!-- Error State (Shown when plan generation or API request fails) -->
+        <div id="results-error-state" class="results-error-state" role="alert" aria-live="assertive" hidden>
+          <div class="error-state-graphic">
+            <svg class="error-state-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <h3 class="error-state-title" id="results-error-title">Unable to Generate Event Plan</h3>
+          <p class="error-state-desc" id="results-error-desc">An unexpected error occurred while generating your plan. Please check your inputs and try again.</p>
+          <div class="error-state-actions">
+            <button type="button" class="btn btn-primary" id="btn-retry-plan">
+              <svg class="icon" aria-hidden="true"><use href="#icon-bolt"></use></svg>
+              <span>Try Again</span>
+            </button>
+            <button type="button" class="btn btn-outline" id="btn-dismiss-error">
+              <span>Dismiss</span>
+            </button>
+          </div>
+        </div>
 
         <!-- Skeleton Loading State (Shown while request is active) -->
         <div id="results-skeleton" class="results-skeleton" aria-busy="true" aria-label="Crafting your event plan..." hidden>

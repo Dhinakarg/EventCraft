@@ -16,6 +16,7 @@ from app.security import (
     generic_exception_handler,
     http_exception_handler,
     not_found_handler,
+    validation_exception_handler,
 )
 
 client = TestClient(app)
@@ -288,3 +289,21 @@ def test_direct_http_exception_handler_codes() -> None:
     res_403 = asyncio.run(http_exception_handler(req, StarletteHTTPException(status_code=403, detail="Forbidden")))
     assert res_403.status_code == 403
     assert b"Forbidden" in res_403.body
+
+
+def test_direct_validation_exception_handler() -> None:
+    """Verify validation_exception_handler returns 422 JSON with structured details."""
+    scope = {"type": "http", "method": "POST", "path": "/api/plan", "headers": []}
+    req = Request(scope)
+
+    class MockValidationError:
+        """Mock RequestValidationError for handler testing."""
+
+        def errors(self) -> list[dict[str, str]]:
+            """Return mock validation error list."""
+            return [{"loc": "guest_count", "msg": "Input should be greater than 0"}]
+
+    res_422 = asyncio.run(validation_exception_handler(req, MockValidationError()))  # type: ignore[arg-type]
+    assert res_422.status_code == 422
+    assert b"Unprocessable Entity" in res_422.body
+    assert b"guest_count" in res_422.body

@@ -12,7 +12,7 @@ import { announceStatus } from "./utils.js";
  */
 export function downloadIcs() {
   if (!state.currentPlan) {
-    alert("Please generate a plan first.");
+    announceStatus("Please generate an event plan first before downloading.");
     return;
   }
   const p = state.currentPlan;
@@ -27,7 +27,7 @@ export function downloadIcs() {
  */
 export function copyPlanAsText() {
   if (!state.currentPlan) {
-    alert("Please generate a plan first.");
+    announceStatus("Please generate an event plan first before copying.");
     return;
   }
   const p = state.currentPlan;
@@ -60,6 +60,6 @@ export function copyPlanAsText() {
     }
     announceStatus("Plan summary copied to clipboard!");
   }).catch(() => {
-    alert("Could not access clipboard.");
+    announceStatus("Clipboard access denied. Please copy manually.");
   });
 }

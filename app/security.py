@@ -3,6 +3,7 @@
 import time
 
 from fastapi import Request, Response
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import HTMLResponse, JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
@@ -176,9 +177,31 @@ async def http_exception_handler(request: Request, exc: Exception) -> Response:
     if status_code == 404:
         return await not_found_handler(request, exc)
     detail = getattr(exc, "detail", "An error occurred.")
+    detail_str = detail if isinstance(detail, str) else str(detail)
     return JSONResponse(
         status_code=status_code,
-        content={"detail": detail},
+        content={
+            "detail": detail,
+            "status_code": status_code,
+            "error": detail_str,
+            "message": f"HTTP {status_code}: {detail_str}",
+        },
+    )
+
+
+async def validation_exception_handler(_request: Request, exc: Exception) -> JSONResponse:
+    """Handle 422 RequestValidationError with structured error state."""
+    raw_errors = getattr(exc, "errors", None)
+    errors = raw_errors() if callable(raw_errors) else []
+    safe_errors = jsonable_encoder(errors)
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": safe_errors,
+            "status_code": 422,
+            "error": "Unprocessable Entity",
+            "message": "Input validation failed. Please check the submitted fields.",
+        },
     )
 
 
@@ -186,5 +209,10 @@ async def generic_exception_handler(_request: Request, _exc: Exception) -> JSONR
     """Handle uncaught exceptions and mask internal traces in responses."""
     return JSONResponse(
         status_code=500,
-        content={"detail": "An internal server error occurred. Please try again later."},
+        content={
+            "detail": "An internal server error occurred. Please try again later.",
+            "status_code": 500,
+            "error": "Internal Server Error",
+            "message": "An internal server error occurred. Please try again later.",
+        },
     )

@@ -6,7 +6,7 @@
 import { appendChatMessage, initChatChips, onChatSubmit } from "./js/chat.js";
 import { copyPlanAsText, downloadIcs } from "./js/export.js";
 import { initFormInteractions } from "./js/form.js";
-import { onPlanSubmit } from "./js/planner.js";
+import { initErrorStateActions, onPlanSubmit } from "./js/planner.js";
 import { initScenarioButtons } from "./js/scenarios.js";
 import { state } from "./js/state.js";
 import { announceStatus } from "./js/utils.js";
@@ -176,6 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initFormInteractions();
   initScenarioButtons();
   initChatChips();
+  initErrorStateActions();
 
   document.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.addEventListener("click", () => activateTab(btn.getAttribute("data-tab")));
@@ -183,16 +184,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const tablist = document.querySelector(".tabs-list");
   if (tablist) tablist.addEventListener("keydown", onTabKeydown);
 
-  document.getElementById("event-plan-form").addEventListener("submit", (e) => {
-    onPlanSubmit(e, activateTab);
-  });
-  document.getElementById("chat-query-form").addEventListener("submit", onChatSubmit);
-
-  document.getElementById("btn-export-ics").addEventListener("click", downloadIcs);
-  document.getElementById("btn-print-plan").addEventListener("click", () => {
-    window.print();
-  });
-  document.getElementById("btn-copy-text").addEventListener("click", copyPlanAsText);
+  document.getElementById("event-plan-form")?.addEventListener("submit", (e) => onPlanSubmit(e, activateTab));
+  document.getElementById("chat-query-form")?.addEventListener("submit", onChatSubmit);
+  document.getElementById("btn-export-ics")?.addEventListener("click", downloadIcs);
+  document.getElementById("btn-print-plan")?.addEventListener("click", () => window.print());
+  document.getElementById("btn-copy-text")?.addEventListener("click", copyPlanAsText);
 
   appendChatMessage("bot", state.chatMessages[0].text);
 });

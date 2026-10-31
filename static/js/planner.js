@@ -68,9 +68,11 @@ export async function onPlanSubmit(e, onPlanSuccess) {
   const emptyState = document.getElementById("results-empty-state");
   const resultsContent = document.getElementById("results-content");
   const skeleton = document.getElementById("results-skeleton");
+  const errorState = document.getElementById("results-error-state");
 
   if (emptyState) emptyState.setAttribute("hidden", "");
   if (resultsContent) resultsContent.setAttribute("hidden", "");
+  if (errorState) errorState.setAttribute("hidden", "");
   if (skeleton) skeleton.removeAttribute("hidden");
 
   let priorities = [];
@@ -145,11 +147,49 @@ export async function onPlanSubmit(e, onPlanSuccess) {
     announceStatus("Event plan generated successfully! Displaying budget breakdown.");
   } catch (err) {
     if (skeleton) skeleton.setAttribute("hidden", "");
-    if (!state.currentPlan && emptyState) emptyState.removeAttribute("hidden");
-    alert(`Could not generate plan: ${err.message}`);
+    if (resultsContent) resultsContent.setAttribute("hidden", "");
+
+    const errorState = document.getElementById("results-error-state");
+    const errorDesc = document.getElementById("results-error-desc");
+    if (errorState && errorDesc) {
+      errorDesc.textContent = err.message || "An error occurred while generating your plan. Please try again.";
+      errorState.removeAttribute("hidden");
+    } else if (!state.currentPlan && emptyState) {
+      emptyState.removeAttribute("hidden");
+    }
     announceStatus(`Error generating plan: ${err.message}`);
   } finally {
     btn.replaceChildren(createSvgIcon("bolt"), " Generate Plan");
     btn.disabled = false;
+  }
+}
+
+/**
+ * Bind retry and dismiss actions for the results error state banner.
+ * @returns {void}
+ */
+export function initErrorStateActions() {
+  const retryBtn = document.getElementById("btn-retry-plan");
+  const dismissBtn = document.getElementById("btn-dismiss-error");
+  const form = document.getElementById("event-plan-form");
+  const errorState = document.getElementById("results-error-state");
+  const emptyState = document.getElementById("results-empty-state");
+  const resultsContent = document.getElementById("results-content");
+
+  if (retryBtn && form) {
+    retryBtn.addEventListener("click", () => {
+      if (errorState) errorState.setAttribute("hidden", "");
+      form.dispatchEvent(new Event("submit"));
+    });
+  }
+  if (dismissBtn) {
+    dismissBtn.addEventListener("click", () => {
+      if (errorState) errorState.setAttribute("hidden", "");
+      if (state.currentPlan && resultsContent) {
+        resultsContent.removeAttribute("hidden");
+      } else if (emptyState) {
+        emptyState.removeAttribute("hidden");
+      }
+    });
   }
 }

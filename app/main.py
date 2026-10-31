@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -23,6 +24,7 @@ from app.security import (
     generic_exception_handler,
     http_exception_handler,
     not_found_handler,
+    validation_exception_handler,
 )
 from app.services.plan_service import _build_warnings
 
@@ -79,6 +81,7 @@ def create_app() -> FastAPI:
     )
     application.add_exception_handler(404, not_found_handler)
     application.add_exception_handler(StarletteHTTPException, http_exception_handler)
+    application.add_exception_handler(RequestValidationError, validation_exception_handler)
     application.add_exception_handler(Exception, generic_exception_handler)
 
     # Core health & index endpoints

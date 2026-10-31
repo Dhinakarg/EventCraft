@@ -834,6 +834,45 @@ input[type="number"] {
   border-color: var(--success);
 }
 
+/* Results Error State (When plan generation or fetch fails) */
+.results-error-state {
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-4);
+}
+.error-state-graphic {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+}
+.error-state-svg {
+  width: 64px;
+  height: 64px;
+  color: var(--danger);
+}
+.error-state-title {
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  color: var(--danger);
+  margin-bottom: var(--space-2);
+}
+.error-state-desc {
+  font-size: var(--font-size-base);
+  color: var(--text-muted);
+  max-width: 520px;
+  margin: 0 auto var(--space-5);
+  line-height: 1.5;
+}
+.error-state-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
 /* Empty State (Before First Submit) */
 .results-empty-state {
   text-align: center;
