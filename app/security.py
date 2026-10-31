@@ -3,7 +3,7 @@
 import time
 
 from fastapi import Request, Response
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 from app.config import get_settings
@@ -117,6 +117,69 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):  # pylint: disable=too-few-
         )
         response.headers["Content-Security-Policy"] = csp
         return response
+
+
+_404_HTML_TEMPLATE: str = (
+    "<!DOCTYPE html>"
+    '<html lang="en">'
+    "<head>"
+    '  <meta charset="utf-8">'
+    '  <meta name="viewport" content="width=device-width, initial-scale=1">'
+    "  <title>404 - Page Not Found | EventCraft AI</title>"
+    "  <style>"
+    "    body { font-family: system-ui, sans-serif; background: #0f172a; color: #f8fafc; "
+    "      display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }"
+    "    .error-card { text-align: center; max-width: 480px; padding: 2.5rem; background: #1e293b; "
+    "      border-radius: 1rem; border: 1px solid #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }"
+    "    h1 { font-size: 3rem; margin: 0 0 0.5rem; color: #f43f5e; }"
+    "    h2 { font-size: 1.5rem; margin: 0 0 1rem; font-weight: 600; }"
+    "    p { color: #94a3b8; margin: 0 0 1.5rem; line-height: 1.5; }"
+    "    a { display: inline-block; background: #4f46e5; color: #fff; text-decoration: none; "
+    "      padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 500; transition: background 0.2s; }"
+    "    a:hover { background: #4338ca; }"
+    "  </style>"
+    "</head>"
+    "<body>"
+    '  <div class="error-card">'
+    "    <h1>404</h1>"
+    "    <h2>Page Not Found</h2>"
+    "    <p>The requested page was not found on this server.</p>"
+    '    <a href="/">Return to EventCraft AI</a>'
+    "  </div>"
+    "</body>"
+    "</html>"
+)
+
+
+async def not_found_handler(request: Request, exc: Exception) -> Response:
+    """Handle 404 Not Found errors with structured JSON or accessible HTML error page."""
+    accept = request.headers.get("accept", "")
+    if "text/html" in accept and not request.url.path.startswith("/api/"):
+        return HTMLResponse(content=_404_HTML_TEMPLATE, status_code=404)
+
+    detail = getattr(exc, "detail", "Not Found")
+    detail_str = detail if isinstance(detail, str) else "Not Found"
+    return JSONResponse(
+        status_code=404,
+        content={
+            "detail": detail_str,
+            "status_code": 404,
+            "error": "Not Found",
+            "message": f"Resource not found: {request.url.path}",
+        },
+    )
+
+
+async def http_exception_handler(request: Request, exc: Exception) -> Response:
+    """Handle Starlette and FastAPI HTTP exceptions with appropriate status and error state."""
+    status_code = getattr(exc, "status_code", 500)
+    if status_code == 404:
+        return await not_found_handler(request, exc)
+    detail = getattr(exc, "detail", "An error occurred.")
+    return JSONResponse(
+        status_code=status_code,
+        content={"detail": detail},
+    )
 
 
 async def generic_exception_handler(_request: Request, _exc: Exception) -> JSONResponse:

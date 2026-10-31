@@ -41,14 +41,15 @@ export function isValidBudget(budget) {
 /**
  * Pure calculation helper for per-guest cost.
  * @param {number|string} budget - Total budget amount.
- * @param {number|string} guests - Number of guests.
+ * @param {number|string} count - Number of guests.
  * @returns {number|null} Rounded per-guest cost or null if inputs are invalid.
  */
-export function calculatePerGuest(budget, guests) {
+export function calculatePerGuest(budget, count) {
   const b = parseFloat(String(budget));
-  const g = parseInt(String(guests), 10);
-  if (!isNaN(b) && b > 0 && !isNaN(g) && g > 0) {
-    return Math.round(b / g);
+  const rawCount = parseInt(String(count), 10);
+  const safeCount = Math.max(1, isNaN(rawCount) ? 1 : rawCount);
+  if (!isNaN(b) && b > 0) {
+    return Math.round(b / safeCount);
   }
   return null;
 }

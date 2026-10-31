@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.ai.gemini_client import LruCache
 from app.api.routes_chat import chat_endpoint
@@ -16,7 +17,13 @@ from app.api.routes_export import router as export_router
 from app.api.routes_plan import plan_endpoint as create_event_plan
 from app.api.routes_plan import router as plan_router
 from app.config import get_settings
-from app.security import RateLimiter, SecurityHeadersMiddleware, generic_exception_handler
+from app.security import (
+    RateLimiter,
+    SecurityHeadersMiddleware,
+    generic_exception_handler,
+    http_exception_handler,
+    not_found_handler,
+)
 from app.services.plan_service import _build_warnings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -70,6 +77,8 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    application.add_exception_handler(404, not_found_handler)
+    application.add_exception_handler(StarletteHTTPException, http_exception_handler)
     application.add_exception_handler(Exception, generic_exception_handler)
 
     # Core health & index endpoints

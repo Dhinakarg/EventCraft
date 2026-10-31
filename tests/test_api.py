@@ -6,11 +6,17 @@ from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.requests import Request
 
 from app.config import get_settings
 from app.main import app, create_app
-from app.security import RateLimiter, generic_exception_handler
+from app.security import (
+    RateLimiter,
+    generic_exception_handler,
+    http_exception_handler,
+    not_found_handler,
+)
 
 client = TestClient(app)
 
@@ -248,3 +254,37 @@ def test_openapi_schema_metadata_complete() -> None:
     assert health_op.get("summary")
     assert health_op.get("description")
     assert health_op["responses"]["200"].get("description")
+
+
+def test_direct_not_found_handler_json_and_html() -> None:
+    """Verify not_found_handler generates appropriate JSON and HTML payloads."""
+    json_scope = {"type": "http", "method": "GET", "path": "/cart", "headers": []}
+    req_json = Request(json_scope)
+    res_json = asyncio.run(not_found_handler(req_json, RuntimeError("Not found")))
+    assert res_json.status_code == 404
+    assert b"Resource not found: /cart" in res_json.body
+
+    html_scope = {
+        "type": "http",
+        "method": "GET",
+        "path": "/cart",
+        "headers": [(b"accept", b"text/html,application/xhtml+xml")],
+    }
+    req_html = Request(html_scope)
+    res_html = asyncio.run(not_found_handler(req_html, RuntimeError("Not found")))
+    assert res_html.status_code == 404
+    assert b"404" in res_html.body
+    assert b"Page Not Found" in res_html.body
+
+
+def test_direct_http_exception_handler_codes() -> None:
+    """Verify http_exception_handler delegates 404 and formats generic HTTP codes."""
+    scope = {"type": "http", "method": "GET", "path": "/test", "headers": []}
+    req = Request(scope)
+
+    res_404 = asyncio.run(http_exception_handler(req, StarletteHTTPException(status_code=404, detail="Missing")))
+    assert res_404.status_code == 404
+
+    res_403 = asyncio.run(http_exception_handler(req, StarletteHTTPException(status_code=403, detail="Forbidden")))
+    assert res_403.status_code == 403
+    assert b"Forbidden" in res_403.body

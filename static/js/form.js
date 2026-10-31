@@ -30,7 +30,9 @@ export function updatePerGuestCalculation() {
   const calcAmount = document.getElementById("per-guest-amount");
   if (!guestInput || !budgetInput || !calcAmount) return;
 
-  const perGuest = calculatePerGuest(budgetInput.value, guestInput.value);
+  const rawCount = parseInt(guestInput.value, 10);
+  const count = Math.max(1, isNaN(rawCount) ? 1 : rawCount);
+  const perGuest = calculatePerGuest(budgetInput.value, count);
   if (perGuest !== null) {
     calcAmount.textContent = `= ${formatCurrency(perGuest, "INR")} per guest`;
   } else {
@@ -94,11 +96,19 @@ export function updatePrioritiesState() {
  * @returns {void}
  */
 export function initFormInteractions() {
-  const guestInput = document.getElementById("guest_count");
-  const budgetInput = document.getElementById("total_budget");
+  const guestInput = /** @type {HTMLInputElement|null} */ (document.getElementById("guest_count"));
+  const budgetInput = /** @type {HTMLInputElement|null} */ (document.getElementById("total_budget"));
   if (guestInput) {
-    guestInput.addEventListener("input", updatePerGuestCalculation);
-    guestInput.addEventListener("change", updatePerGuestCalculation);
+    const onGuestChange = () => {
+      const raw = parseInt(guestInput.value, 10);
+      if (!isNaN(raw) && raw < 1) {
+        const count = Math.max(1, raw);
+        guestInput.value = String(count);
+      }
+      updatePerGuestCalculation();
+    };
+    guestInput.addEventListener("input", onGuestChange);
+    guestInput.addEventListener("change", onGuestChange);
     guestInput.addEventListener("blur", () => validateField("guest_count"));
   }
   if (budgetInput) {

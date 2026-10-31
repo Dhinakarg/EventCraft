@@ -121,3 +121,31 @@ def test_route_export_ics_invalid_date() -> None:
         },
     )
     assert resp.status_code == 422
+
+
+def test_route_cart_not_found() -> None:
+    """GET /cart must return HTTP 404 with structured error state or HTML page."""
+    json_resp = client.get("/cart")
+    assert json_resp.status_code == 404
+    data = json_resp.json()
+    assert data["status_code"] == 404
+    assert data["detail"] == "Not Found"
+    assert data["error"] == "Not Found"
+    assert "/cart" in data["message"]
+
+    post_resp = client.post("/cart")
+    assert post_resp.status_code == 404
+
+    html_resp = client.get("/cart", headers={"Accept": "text/html"})
+    assert html_resp.status_code == 404
+    assert "text/html" in html_resp.headers.get("content-type", "")
+    assert "404" in html_resp.text
+    assert "Page Not Found" in html_resp.text
+    assert "Return to EventCraft AI" in html_resp.text
+
+
+def test_route_arbitrary_path_not_found() -> None:
+    """Non-existent API or asset paths must return HTTP 404 error state."""
+    resp = client.get("/api/unknown-service")
+    assert resp.status_code == 404
+    assert resp.json()["status_code"] == 404

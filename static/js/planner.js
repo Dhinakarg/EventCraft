@@ -92,11 +92,19 @@ export async function onPlanSubmit(e, onPlanSuccess) {
   const checkedType = document.querySelector('input[name="event_type"]:checked');
   const eventType = checkedType ? checkedType.value : (document.getElementById("event_type")?.value || "wedding");
 
+  const guestCountInput = /** @type {HTMLInputElement|null} */ (document.getElementById("guest_count"));
+  const rawGuestCount = guestCountInput ? parseInt(guestCountInput.value, 10) : 1;
+  const count = Math.max(1, isNaN(rawGuestCount) ? 1 : rawGuestCount);
+
+  const budgetInput = /** @type {HTMLInputElement|null} */ (document.getElementById("total_budget"));
+  const rawBudget = budgetInput ? parseFloat(budgetInput.value) : 1;
+  const totalBudget = Math.max(1, isNaN(rawBudget) ? 1 : rawBudget);
+
   const payload = {
     event_type: eventType,
-    event_date: document.getElementById("event_date").value,
-    guest_count: parseInt(document.getElementById("guest_count").value, 10),
-    total_budget: parseFloat(document.getElementById("total_budget").value),
+    event_date: document.getElementById("event_date")?.value || "",
+    guest_count: count,
+    total_budget: totalBudget,
     currency: "INR",
     vibe: document.getElementById("vibe")?.value.trim() || "Modern",
     city: document.getElementById("city")?.value.trim() || "",

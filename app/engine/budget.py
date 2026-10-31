@@ -149,8 +149,8 @@ def allocate_event_budget(req: EventRequest, contingency_rate: float = DEFAULT_C
     feasibility = _check_feasibility(req.event_type, req.total_budget, req.guest_count, req.currency)
 
     return BudgetResponse(
-        total_budget=round(req.total_budget, 2),
-        per_guest_cost=round(req.total_budget / req.guest_count, 2),
+        total_budget=round(max(0.0, req.total_budget), 2),
+        per_guest_cost=round(max(0.0, req.total_budget) / max(1, req.guest_count), 2),
         currency=req.currency,
         contingency_fund=build_res.contingency_fund,
         contingency_percentage=contingency_rate,

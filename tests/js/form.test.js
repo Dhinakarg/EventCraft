@@ -36,10 +36,12 @@ test("isValidBudget validates positive numbers", () => {
   assert.strictEqual(isValidBudget("not-a-number"), false);
 });
 
-test("calculatePerGuest computes rounded cost per attendee", () => {
+test("calculatePerGuest computes rounded cost per attendee and safeguards negative counts with Math.max", () => {
   assert.strictEqual(calculatePerGuest(100000, 100), 1000);
   assert.strictEqual(calculatePerGuest(100000, 3), 33333);
+  assert.strictEqual(calculatePerGuest(100000, -5), 100000);
+  assert.strictEqual(calculatePerGuest(50000, 0), 50000);
   assert.strictEqual(calculatePerGuest(0, 100), null);
-  assert.strictEqual(calculatePerGuest(100000, 0), null);
+  assert.strictEqual(calculatePerGuest(-500, 10), null);
   assert.strictEqual(calculatePerGuest("invalid", 50), null);
 });
